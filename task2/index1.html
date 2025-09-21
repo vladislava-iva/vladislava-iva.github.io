@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Задание 2</title>
+
+    <link rel="icon" href="./favicon.ico" />
+    <link type="image/x-icon" href="./favicon.ico" rel="shortcut icon" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="container">
+        <img src="./icon.svg" alt="icon" class="header__logo" />
+        <nav class="header__nav">
+          <ul class="header__list">
+            <li><a href="#" class="active">Главная</a></li>
+            <li><a href="https://dzen.ru/">Дзен</a></li>
+            <li><a href="https://www.kubsu.ru/">КубГУ</a></li>
+          </ul>
+        </nav>
+      </div>
+      <p class="container">Название</p>
+    </header>
+
+    <div class="container">
+      <h2>гиперссылки:</h2>
+      <section id="links">
+        <ul>
+          <li>
+            абсолютная гиперссылка на главную страницу сайта kubsu.ru:
+            <a href="http://www.kubsu.ru/index.php">ссылка</a>
+          </li>
+
+          <li>
+            абсолютная гиперссылка на главную сайта kubsu.ru в протоколе https:
+            <a href="https://www.kubsu.ru/index.php">ссылка</a>
+          </li>
+
+          <li>
+            ссылка-изображение:
+            <a href="https://www.kubsu.ru/index.php">
+              <img
+                src="image.jpg"
+                width="50"
+                height="30"
+                alt="Цветок"
+                class="img1"
+              />
+            </a>
+          </li>
+
+          <li>
+            сокращенная ссылка на внутреннюю страницу:
+            <a href="/subject">ссылка</a>
+          </li>
+
+          <li>
+            сокращенная ссылка на главную страницу: <a href="/">ссылка</a>
+          </li>
+
+          <li>
+            ссылка на фрагмент текущей страницы: <a href="#links">ссылка</a>
+          </li>
+
+          <li>
+            ссылка с тремя параметрами в URL:
+            <a href="https://github.com/?theme=dark&language=en&color=blue"
+              >ссылка</a
+            >
+          </li>
+
+          <li>
+            ссылку с параметром id в URL:
+            <a
+              href="https://market.yandex.ru/card/html-i-css-razrabotka-i-dizayn-veb-saytov-tsifrovaya-kniga/103458083914?shopId=1159712"
+              >ссылка</a
+            >
+          </li>
+
+          <li>
+            относительную на страницу в текущем каталоге:
+            <a href="subject.html">ссылка</a>
+          </li>
+
+          <li>
+            относительную на страницу в каталоге about:
+            <a href="about/about.html">ссылка</a>
+          </li>
+
+          <li>
+            относительную на страницу в каталоге уровнем выше текущего:
+            <a href="../product.html">ссылка</a>
+          </li>
+
+          <li>
+            относительную на страницу в каталоге двумя уровнями выше:
+            <a href="../..library.html">ссылка</a>
+          </li>
+
+          <li>
+            контекстную в тексте абзаца: прочитайте об истории КУБГУ
+            <a href="https://www.kubsu.ru/ru/university/history-tradition"
+              >подробнее</a
+            >
+          </li>
+
+          <li>
+            ссылку на фрагмент страницы стороннего сайта:
+            <a href="https://pdd.urent.ru/#recommendations">ссылка</a>
+          </li>
+
+          <li>
+            ссылки из прямоугольных и круглых областей картинки (HTML-тег map):
+          </li>
+          <img src="cat.png" width="300" height="300" alt="cat" usemap="#cat" />
+
+          <map name="cat">
+            <area
+              shape="rect"
+              coords="70,50,190,63"
+              alt="cat1"
+              href="https://www.kubsu.ru/ru/education/programs"
+            />
+            <area
+              shape="circle"
+              coords="210,107,109"
+              alt="cat2"
+              href="https://www.kubsu.ru/ru/studlife/youth_culture_and_leisure_center"
+            />
+          </map>
+          <li>ссылка с пустым href: <a href="">ссылка</a></li>
+
+          <li>ссылка без href: <a>ссылка</a></li>
+
+          <li>
+            ссылка, по которой запрещен переход поисковикам:
+            <a href="/priv" rel="nofollow">ссылка</a>
+          </li>
+
+          <li>
+            ссылка, запрещеннаю для индексации поисковиками:
+            <a href="/noindex" rel="noindex">ссылка</a>
+          </li>
+
+          <li>
+            нумерованный список ссылок с подписями title:
+            <ol>
+              <li><a href="/subject" title="Первая страница">ссылка 1</a></li>
+              <li><a href="/priv" title="Вторая страница">ссылка 2</a></li>
+              <li><a href="/noindex" title="Третья страница">ссылка 3</a></li>
+            </ol>
+          </li>
+
+          <li>
+            ссылка на файл на сервере FTP с авторизацией:
+            <a href="ftp://username:password@123.123.123.123">ссылка</a>
+          </li>
+        </ul>
+      </section>
+
+      <table>
+        <p class="table__text">Таблица</p>
+        <tr>
+          <th>Колонка 1</th>
+          <th>Колонка 2</th>
+          <th>Колонка 3</th>
+          <th>Колонка 4</th>
+          <th>Колонка 5</th>
+        </tr>
+
+        <tr>
+          <td colspan="2">Ячейка 11 объединенная с 12</td>
+          <td>Ячейка 13</td>
+          <td colspan="2">Ячейка 14 объединенная с 15</td>
+        </tr>
+
+        <tr>
+          <td>Ячейка 21</td>
+          <td>Ячейка 22</td>
+          <td>Ячейка 23</td>
+          <td>Ячейка 24</td>
+          <td>Ячейка 25</td>
+        </tr>
+
+        <tr>
+          <td colspan="3">Ячейка 31 объединенная с 32 и 33</td>
+          <td>Ячейка 34</td>
+          <td>Ячейка 35</td>
+        </tr>
+
+        <tr>
+          <td colspan="3">Ячейка 41 объединенная с 42 и 43</td>
+          <td>Ячейка 44</td>
+          <td>Ячейка 45</td>
+        </tr>
+
+        <tr>
+          <td>Ячейка 51</td>
+          <td colspan="3">Ячейка 52 объединенная с 53 и 54</td>
+          <td>Ячейка 55</td>
+        </tr>
+
+        <tr>
+          <td>Ячейка 51</td>
+          <td colspan="2">Ячейка 62 объединенная с 63</td>
+          <td colspan="2">Ячейка 64 объединенная с 65</td>
+        </tr>
+      </table>
+
+      <h2>форма:</h2>
+      <form action="/" method="POST">
+        <label>
+          фио:<br />
+          <input name="field-name" placeholder="введите ваше имя" /> </label
+        ><br />
+
+        <label for="phone">
+          телефон:<br />
+          <input
+            name="field-phone"
+            title="Номер должен быть в формате: 8-999-990-99-99"
+            pattern="[8]-[0-9]{3}-[0-9]{3}-[0-9]{2}-[0-9]{2}"
+          /> </label
+        ><br />
+
+        <label>
+          текстовое поле email:<br />
+          <input
+            name="field-email"
+            type="email"
+            placeholder="введите вашу почту"
+          /> </label
+        ><br />
+
+        <label>
+          дата рождения:<br />
+          <input name="field-date" value="2000-01-01" type="date" /> </label
+        ><br />
+
+        <label>
+          пол:
+          <input
+            type="radio"
+            checked="checked"
+            name="radio-group-1"
+            value="value1"
+          />
+          мужской</label
+        >
+        <label
+          ><input type="radio" name="radio-group-1" value="value2" />
+          женский</label
+        ><br />
+
+        <label>
+          любимый язык программирования:
+          <br />
+          <select name="field-language" multiple="multiple" size="3">
+            <option value="value1">Pascal</option>
+            <option value="value2">C</option>
+            <option value="value3">C++</option>
+            <option value="value4">JavaScript</option>
+            <option value="value5">PHP</option>
+            <option value="value6">Python</option>
+            <option value="value7">Java</option>
+            <option value="value8">Haskel</option>
+            <option value="value9">Clojure</option>
+            <option value="value10">Prolog</option>
+            <option value="value11" selected="selected">Scala</option>
+          </select>
+        </label>
+        <p></p>
+        <label>
+          биография:<br />
+          <textarea name="field-bio" rows="5" cols="20">
+начальное значение</textarea
+          ></label
+        ><br />
+
+        <p>чекбокс:</p>
+        <br />
+        <label
+          ><input type="checkbox" checked="checked" name="check-1" /> с
+          контрактом ознакомлен</label
+        ><br />
+        <input type="submit" value="сохранить" />
+      </form>
+    </div>
+    <footer class="footer">
+      <div class="container">
+        <p class="text-footer">(с) Влада Иванова</p>
+      </div>
+    </footer>
+  </body>
+</html>
