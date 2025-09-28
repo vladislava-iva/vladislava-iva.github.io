@@ -1,0 +1,160 @@
+body {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  color: #1678e8;
+  margin: 0;
+}
+
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+#table {
+  order: 1;
+}
+#links {
+  order: 2;
+}
+#form {
+  order: 3;
+}
+.header {
+  background-color: #efefef;
+  padding: 10px;
+  height: auto;
+  width: 100%;
+}
+
+.footer {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #efefef;
+  height: 50px;
+}
+
+.header__nav {
+  background-color: #e0e0e0;
+  width: 100%;
+}
+
+h1,
+p {
+  font-family: Arial, sans-serif;
+  color: #1678e8;
+}
+
+.header__list a {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  text-decoration: none;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.header__list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.header__top {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.header__nav a.active {
+  opacity: 1;
+  font-weight: 600;
+}
+
+.header__nav a {
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.header__nav a:hover {
+  opacity: 0.9;
+}
+.header__logo {
+  width: 40px;
+  height: 40px;
+}
+
+.header__name {
+  text-align: center;
+  margin: 0;
+}
+
+a {
+  color: #264f90;
+  text-decoration: none;
+}
+h2 {
+  font-family: Arial, sans-serif;
+  color: #264f90;
+}
+.img1 {
+  border-radius: 100;
+}
+
+tr:nth-child(even) {
+  background-color: #f7f7f7;
+}
+
+tr:nth-child(odd) {
+  background-color: #dbdbdb;
+}
+
+#main-aside-wrapper header {
+  flex-direction: column;
+}
+
+@media screen and (min-width: 800px) {
+  #links {
+    order: 1;
+  }
+
+  #table {
+    order: 2;
+  }
+
+  #form {
+    order: 3;
+  }
+  .header__top {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+  }
+
+  .header__nav{
+    width: auto;
+  }
+
+  .header__list {
+    flex-direction: row;
+    width: auto;
+  }
+
+  .header__list a {
+    width: auto;
+    padding: 10px 20px;
+  }
+
+  .header{
+    height: 90px;
+    display: flex;
+    align-items: center;
+  }
+}
