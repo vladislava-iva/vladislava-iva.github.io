@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Задание 4</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="./favicon.ico" />
+  </head>
+
+  <body class="d-flex flex-column">
+    <div class="header-container">
+      <header class="container">
+        <div class="header-centered">
+          <div
+            class="d-flex flex-column flex-md-row align-items-center justify-content-center mb-2 mb-md-3"
+          >
+            <img
+              src="./icon.svg"
+              alt="icon"
+              class="img-fluid me-0 me-md-3"
+              style="width: 40px; height: 40px"
+            />
+            <h1 class="h4 mb-0 text-primary">Название</h1>
+          </div>
+          <nav class="nav-centered w-100">
+            <ul class="nav nav-pills nav-custom justify-content-center">
+              <li class="nav-item">
+                <a
+                  class="nav-link active text-primary-custom mx-1 mx-md-2"
+                  href="#"
+                  >Главная</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link text-primary-custom mx-1 mx-md-2"
+                  href="https://dzen.ru/"
+                  >Дзен</a
+                >
+              </li>
+
+              <li class="nav-item">
+                <a
+                  class="nav-link text-primary-custom"
+                  href="https://www.kubsu.ru/"
+                  >КубГУ</a
+                >
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </header>
+    </div>
+
+    <main class="container flex-grow-1 py-4">
+      <div class="row g-4">
+        <section id="links" class="col-12 col-lg-6 order-1 order-lg-0">
+          <div class="card h-100 custom-card">
+            <div class="card-body">
+              <h2 class="card-title h4 mb-4">Гиперссылки:</h2>
+              <ul>
+                <li class="mb-3">
+                  абсолютная гиперссылка на главную страницу сайта kubsu.ru:
+                  <a href="http://www.kubsu.ru/index.php">ссылка</a>
+                </li>
+
+                <li class="mb-3">
+                  абсолютная гиперссылка на главную сайта kubsu.ru в протоколе
+                  https:
+                  <a href="https://www.kubsu.ru/index.php">ссылка</a>
+                </li>
+
+                <li class="mb-3">
+                  ссылка-изображение:
+                  <a href="/" class="ms-2">
+                    <img
+                      src="image.jpg"
+                      width="50"
+                      height="30"
+                      alt="Цветок"
+                      class="img-rounded"
+                    />
+                  </a>
+                </li>
+
+                <li class="mb-3">
+                  сокращенная ссылка на внутреннюю страницу:
+                  <a href="/subject">ссылка</a>
+                </li>
+
+                <li class="mb-3">
+                  сокращенная ссылка на главную страницу: <a href="/">ссылка</a>
+                </li>
+
+                <li class="mb-3">
+                  ссылка на фрагмент текущей страницы:
+                  <a href="#links">ссылка</a>
+                </li>
+
+                <li class="mb-3">
+                  ссылка с тремя параметрами в URL:
+                  <a
+                    href="https://github.com/?theme=dark&language=en&color=blue"
+                    >ссылка</a
+                  >
+                </li>
+
+                <li class="mb-3">
+                  ссылку с параметром id в URL:
+                  <a
+                    href="https://market.yandex.ru/card/html-i-css-razrabotka-i-dizayn-veb-saytov-tsifrovaya-kniga/103458083914?shopId=1159712"
+                    >ссылка</a
+                  >
+                </li>
+
+                <li class="mb-3">
+                  относительную на страницу в текущем каталоге:
+                  <a href="subject.html">ссылка</a>
+                </li>
+
+                <li class="mb-3">
+                  относительную на страницу в каталоге about:
+                  <a href="about/about.html">ссылка</a>
+                </li>
+
+                <li class="mb-3">
+                  относительную на страницу в каталоге уровнем выше текущего:
+                  <a href="../product.html">ссылка</a>
+                </li>
+
+                <li class="mb-3">
+                  относительную на страницу в каталоге двумя уровнями выше:
+                  <a href="../..library.html">ссылка</a>
+                </li>
+
+                <li class="mb-3">
+                  контекстную в тексте абзаца: прочитайте об истории КУБГУ
+                  <a href="https://www.kubsu.ru/ru/university/history-tradition"
+                    >подробнее</a
+                  >
+                </li>
+
+                <li class="mb-3">
+                  ссылку на фрагмент страницы стороннего сайта:
+                  <a href="https://pdd.urent.ru/#recommendations">ссылка</a>
+                </li>
+
+                <li class="mb-3">
+                  ссылки из прямоугольных и круглых областей картинки (HTML-тег
+                  map):
+                  <div class="mt-2">
+                    <img
+                      src="cat.png"
+                      width="300"
+                      height="300"
+                      alt="cat"
+                      usemap="#cat"
+                      class="img"
+                    />
+                    <map name="cat">
+                      <area
+                        shape="rect"
+                        coords="70,50,190,63"
+                        alt="cat1"
+                        href="https://www.kubsu.ru/ru/education/programs"
+                      />
+                      <area
+                        shape="circle"
+                        coords="210,107,109"
+                        alt="cat2"
+                        href="https://www.kubsu.ru/ru/studlife/youth_culture_and_leisure_center"
+                      />
+                    </map>
+                  </div>
+                </li>
+
+                <li class="mb-3">
+                  ссылка с пустым href:
+                  <a href="" class="ms-2 text-primary-custom">ссылка</a>
+                </li>
+
+                <li class="mb-3">
+                  ссылка без href:
+                  <a class="ms-2 text-primary-custom">ссылка</a>
+                </li>
+
+                <li class="mb-3">
+                  нумерованный список ссылок с подписями title:
+                  <ol class="mt-2">
+                    <li>
+                      <a
+                        href="/subject"
+                        title="Первая страница"
+                        class="text-primary-custom"
+                        >ссылка 1</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="/priv"
+                        title="Вторая страница"
+                        class="text-primary-custom"
+                        >ссылка 2</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        href="/noindex"
+                        title="Третья страница"
+                        class="text-primary-custom"
+                        >ссылка 3</a
+                      >
+                    </li>
+                  </ol>
+                </li>
+                <li class="mb-3">
+                  ссылка на файл на сервере FTP с авторизацией:
+                  <a href="ftp://username:password@123.123.123.123">ссылка</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="table" class="col-12 col-lg-6 order-0 order-lg-1">
+          <div class="card h-100 custom-card">
+            <div class="card-body">
+              <h3 class="card-title h5 mb-0">Таблица</h3>
+              <div class="table">
+                <table class="table table-custom">
+                  <th class="table-light">
+                    <tr>
+                      <th>Колонка 1</th>
+                      <th>Колонка 2</th>
+                      <th>Колонка 3</th>
+                      <th>Колонка 4</th>
+                      <th>Колонка 5</th>
+                    </tr>
+                  </th>
+                  <tbody>
+                    <tr>
+                      <td colspan="2">Ячейка 11 объединенная с 12</td>
+                      <td>Ячейка 13</td>
+                      <td colspan="2">Ячейка 14 объединенная с 15</td>
+                    </tr>
+                    <tr>
+                      <td>Ячейка 21</td>
+                      <td>Ячейка 22</td>
+                      <td>Ячейка 23</td>
+                      <td>Ячейка 24</td>
+                      <td>Ячейка 25</td>
+                    </tr>
+                    <tr>
+                      <td colspan="3">Ячейка 31 объединенная с 32 и 33</td>
+                      <td>Ячейка 34</td>
+                      <td>Ячейка 35</td>
+                    </tr>
+                    <tr>
+                      <td colspan="3">Ячейка 41 объединенная с 42 и 43</td>
+                      <td>Ячейка 44</td>
+                      <td>Ячейка 45</td>
+                    </tr>
+                    <tr>
+                      <td>Ячейка 51</td>
+                      <td colspan="3">Ячейка 52 объединенная с 53 и 54</td>
+                      <td>Ячейка 55</td>
+                    </tr>
+                    <tr>
+                      <td>Ячейка 61</td>
+                      <td colspan="2">Ячейка 62 объединенная с 63</td>
+                      <td colspan="2">Ячейка 64 объединенная с 65</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="form" class="col-12 order-2">
+          <div class="card custom-card">
+            <div class="card-body">
+              <h2 class="card-title">Форма:</h2>
+              <form action="/" method="POST" class="row g-3">
+                <div class="col-12 col-md-6">
+                  <label class="form-label">
+                    фио:
+                    <input
+                      name="field-name"
+                      placeholder="введите ваше имя"
+                      class="form-control mt-1"
+                    />
+                  </label>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <label for="phone" class="form-label">
+                    телефон:
+                    <input
+                      name="field-phone"
+                      title="Номер должен быть в формате: 8-999-990-99-99"
+                      pattern="[8]-[0-9]{3}-[0-9]{3}-[0-9]{2}-[0-9]{2}"
+                      id="phone"
+                      class="form-control mt-1"
+                    />
+                  </label>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <label for="email" class="form-label">
+                    текстовое поле email:
+                    <input
+                      name="field-email"
+                      type="text"
+                      id="email"
+                      placeholder="введите вашу почту"
+                      class="form-control mt-1"
+                    />
+                  </label>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <label class="form-label">
+                    дата рождения:
+                    <input
+                      name="field-date"
+                      value="2000-01-01"
+                      type="date"
+                      class="form-control mt-1"
+                    />
+                  </label>
+                </div>
+
+                <div class="col-12">
+                  <div class="form-label">пол:</div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      type="radio"
+                      checked="checked"
+                      name="radio-group-1"
+                      value="value1"
+                      class="form-check-input"
+                      id="male"
+                    />
+                    <label class="form-check-label" for="male">мужской</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      type="radio"
+                      name="radio-group-1"
+                      value="value2"
+                      class="form-check-input"
+                      id="female"
+                    />
+                    <label class="form-check-label" for="female">женский</label>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <label class="form-label">
+                    любимый язык программирования:
+                    <select
+                      name="field-language"
+                      multiple
+                      size="3"
+                      class="form-select mt-1"
+                    >
+                      <option value="value1">Pascal</option>
+                      <option value="value2">C</option>
+                      <option value="value3">C++</option>
+                      <option value="value4">JavaScript</option>
+                      <option value="value5">PHP</option>
+                      <option value="value6">Python</option>
+                      <option value="value7">Java</option>
+                      <option value="value8">Haskel</option>
+                      <option value="value9">Clojure</option>
+                      <option value="value10">Prolog</option>
+                      <option value="value11" selected>Scala</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="col-12">
+                  <label for="bio" class="form-label">
+                    биография:
+                    <textarea
+                      name="field-bio"
+                      rows="5"
+                      class="form-control mt-1"
+                    >
+начальное значение</textarea
+                    >
+                  </label>
+                </div>
+
+                <div class="col-12">
+                  <div class="form-label">чекбокс:</div>
+                  <div class="form-check">
+                    <input
+                      type="checkbox"
+                      checked="checked"
+                      name="check-1"
+                      class="form-check-input"
+                    />
+                    <label class="form-check-label">
+                      с контрактом ознакомлен
+                    </label>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <button type="submit" class="btn btn-primary">
+                    сохранить
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="bg-light mt-auto py-3">
+      <div class="container">
+        <p class="text-center mb-0 text-muted">(с) Влада Иванова</p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

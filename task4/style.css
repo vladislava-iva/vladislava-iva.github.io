@@ -1,0 +1,42 @@
+body {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  color: #1678e8;
+}
+
+.custom-card {
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.text-primary-custom {
+  color: #264f90;
+}
+
+.table-custom th {
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+}
+
+.img-rounded {
+  border-radius: 100px;
+}
+
+.nav-custom .nav-link {
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.nav-custom .nav-link:hover,
+.nav-custom .nav-link.active {
+  opacity: 1;
+}
+
+.table-custom:nth-child(even) {
+  background-color: #501616;
+}
+
+tr:nth-child(odd) {
+  background-color: #dbdbdb;
+}
