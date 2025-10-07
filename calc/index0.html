@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Калькулятор</title>
+    <link href="style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <h1>Калькулятор</h1>
+    <div class="container">
+      <div class="calculator">
+        <label for="count">Количество (шт): </label>
+        <input
+          type="text"
+          class="count"
+          placeholder="Введите количество товара"
+        />
+        <br />
+        <select name="products">
+          <option value="500">Мяч футбольный (500 р)</option>
+          <option value="600">Мяч баскетбольный (600 р)</option>
+          <option value="550">Мяч волейбольный (550 р)</option>
+        </select>
+        <br />
+
+        <button onclick="calculate()">Вычислить</button>
+
+        <div class="result"></div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
