@@ -1,0 +1,65 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  max-width: 600px;
+}
+
+h1 {
+  font-size: 24px;
+  color: #db1b7b;
+}
+
+.container {
+  background-color: #db1b7b;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 300px;
+}
+
+.calc {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.type {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+label {
+  font-size: 16px;
+  color: #ffffff;
+}
+
+input[type="number"] {
+  width: 100px;
+  padding: 5px;
+  font-size: 16px;
+  border: 1px solid #e132a9;
+  border-radius: 4px;
+}
+
+legend {
+  color: #ffffff;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+select {
+  padding: 5px;
+  font-size: 16px;
+  border: 1px solid #e132a9;
+  border-radius: 4px;
+}
+
+#result {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-top: 20px;
+}

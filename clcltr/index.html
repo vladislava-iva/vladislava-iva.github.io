@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Калькулятор</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Калькулятор</h1>
+    <div class="container">
+      <div class="calc">
+        <label for="count">Количество:</label>
+        <input id="count" type="number" min="1" value="1" />
+        <div class="type">
+          <legend>Тип услуги:</legend>
+          <label>
+            <input type="radio" name="serviceType" value="type1" checked />
+            Тип 1 (без опций, 1500 руб.)
+          </label>
+          <label>
+            <input type="radio" name="serviceType" value="type2" />
+            Тип 2 (с опциями, 2500 руб.)
+          </label>
+          <label>
+            <input type="radio" name="serviceType" value="type3" />
+            Тип 3 (со свойствами, 3000 руб.)
+          </label>
+        </div>
+
+        <label for="options" id="optionsL" style="display: none"
+          >Выберите опцию:</label
+        >
+        <select id="options" style="display: none">
+          <option value="opt1">Опция 1 (+500 руб.)</option>
+          <option value="opt2">Опция 2 (+1000 руб.)</option>
+        </select>
+
+        <label id="checkL" style="display: none">
+          <input type="checkbox" id="check" />
+          Добавить свойство (+300 руб.)
+        </label>
+      </div>
+
+      <div id="result">Итог: 0 руб.</div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
