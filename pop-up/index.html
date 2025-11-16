@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Форма обратной связи</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="c">
+      <div class="h">
+        <h1>Обратная связь</h1>
+        <button id="openBtn" class="btn">Открыть форму</button>
+      </div>
+    </div>
+
+    <div id="popup" class="p">
+      <div class="p-c">
+        <div class="p-h">
+          <h2 class="p-t">Форма обратной связи</h2>
+          <button class="close">&times;</button>
+        </div>
+
+        <form id="form" class="f">
+          <div class="f-g">
+            <input
+              type="text"
+              name="fio"
+              placeholder="ФИО"
+              class="f-i"
+              required
+            />
+          </div>
+
+          <div class="f-g">
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              class="f-i"
+              required
+            />
+          </div>
+
+          <div class="f-g">
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Телефон"
+              class="f-i"
+              pattern="[\+]?[0-9\s\-\(\)]+"
+              title="Введите корректный номер телефона"
+            />
+          </div>
+
+          <div class="f-g">
+            <input
+              type="text"
+              name="org"
+              placeholder="Организация"
+              class="f-i"
+            />
+          </div>
+
+          <div class="f-g">
+            <textarea
+              name="msg"
+              placeholder="Сообщение"
+              class="f-i t-a"
+              required
+            ></textarea>
+          </div>
+
+          <div class="cb-g">
+            <input type="checkbox" name="agree" id="agree" required />
+            <label for="agree"
+              >Я согласна(ен) с политикой обработки данных</label
+            >
+          </div>
+
+          <button type="submit" class="btn sub">Отправить</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
