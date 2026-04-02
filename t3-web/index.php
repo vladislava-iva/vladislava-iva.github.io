@@ -36,7 +36,6 @@ $langs = $db->query("SELECT id, name FROM language ORDER BY name")->fetchAll(PDO
 
       <?php if (!empty($_GET['errors'])): ?>
         <?php
-          session_start();
           if (!empty($_SESSION['form_errors'])):
         ?>
           <div class="msg-error">
