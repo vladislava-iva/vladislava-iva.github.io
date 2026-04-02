@@ -1,1 +1,2 @@
-ошибка подключения к БД: SQLSTATE[HY000] [1045] Access denied for user 'webuser'@'localhost' (using password: YES)
+
+Fatal error: Uncaught Error: Call to undefined function mb_strlen() in /home/u82419/www/vladislava-iva.github.io/t3-web/form.php:20 Stack trace: #0 {main} thrown in /home/u82419/www/vladislava-iva.github.io/t3-web/form.php on line 20
