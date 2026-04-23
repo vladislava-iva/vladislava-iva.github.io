@@ -6,7 +6,7 @@ $values = $_POST;
 
 if (
     empty($_POST['fio']) ||
-    mb_strlen($_POST['fio']) > 150 ||
+    strlen($_POST['fio']) > 150 ||
     !preg_match('/^[А-Яа-яA-Za-z ]+$/u', $_POST['fio'])
 ) {
     $errors['fio'] = "ФИО должно содержать только буквы и пробелы и быть не длиннее 150 символов";
@@ -66,7 +66,7 @@ try {
     $pass='7111555';
     $dbname='u82419';
     $db = new PDO(
-        'mysql:host=localhost;dbname=$dbname;charset=utf8mb4',
+        "mysql:host=localhost;dbname=$dbname;charset=utf8mb4",
         $user,
         $pass,
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
