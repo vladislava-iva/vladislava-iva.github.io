@@ -1,0 +1,30 @@
+USE u82419;
+
+CREATE TABLE application (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fio VARCHAR(150),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    birth_date DATE,
+    gender ENUM('male','female'),
+    bio TEXT,
+    contract TINYINT(1),
+    login VARCHAR(50),
+    pass_hash VARCHAR(255)
+);
+
+CREATE TABLE languages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(20)
+);
+
+INSERT INTO languages (code) VALUES
+('pascal'),('c'),('cpp'),('javascript'),
+('php'),('python'),('java'),('haskell'),
+('clojure'),('prolog'),('scala'),('go');
+
+CREATE TABLE app_languages (
+    app_id INT,
+    lang_id INT,
+    FOREIGN KEY (app_id) REFERENCES application(id)
+);
