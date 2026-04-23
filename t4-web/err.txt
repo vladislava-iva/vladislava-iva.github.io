@@ -22,3 +22,6 @@ mysql> CREATE TABLE application_language (
     ->     FOREIGN KEY (application_id) REFERENCES application(id)
     -> );
 ERROR 1050 (42S01): Table 'application_language' already exists
+
+mysql> drop table application;
+ERROR 3730 (HY000): Cannot drop table 'application' referenced by a foreign key constraint 'application_language_ibfk_1' on table 'application_language'.
