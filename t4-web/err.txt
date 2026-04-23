@@ -1,6 +1,4 @@
-Fatal error: Uncaught Error: Call to undefined function mb_strlen() in /home/u82419/www/vladislava-iva.github.io/t4-web/form.php:9 Stack trace: #0 {main} thrown in /home/u82419/www/vladislava-iva.github.io/t4-web/form.php on line 9
-
-mysql>
+Database changed
 mysql> CREATE TABLE application (
     ->     id INT AUTO_INCREMENT PRIMARY KEY,
     ->     name VARCHAR(150),
@@ -10,62 +8,17 @@ mysql> CREATE TABLE application (
     ->     gender ENUM('male','female'),
     ->     bio TEXT,
     ->     contract TINYINT(1),
-    ->     login VARCHAR(50),
+VARC    ->     login VARCHAR(50),
     ->     pass_hash VARCHAR(255),
     ->     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     -> );
-ERROR 1046 (3D000): No database selected
-mysql>
+ERROR 1050 (42S01): Table 'application' already exists
+plication_language (
+    id INT AUTO_Imysql>
 mysql> CREATE TABLE application_language (
     ->     id INT AUTO_INCREMENT PRIMARY KEY,
     ->     application_id INT,
     ->     language_id INT,
     ->     FOREIGN KEY (application_id) REFERENCES application(id)
     -> );
-ERROR 1046 (3D000): No database selected
-mysql> CREATE TABLE application (
-TO_I    ->     id INT AUTO_INCREMENT PRIMARY KEY,
-    ->     name VARCHAR(150),
-    ->     phone VARCHAR(20),
-    ->     email VARCHAR(100),
-    -> ,
-    ge    birthdate DATE,
-    ->     gender ENUM('male','female'),
-    ->     bio TEXT,
-    ->     contract TINYINT(1),
-    ->     login VARCHAR(50),
-    ->     pass_hash VARCHAR(255),
-created_    ->     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    -> );
-ERROR 1046 (3D000): No database selected
-mysql>
-mysql> CREATE TABLE application_language (
-    ->     id INT AUTO_INCREMENT PRIMARY KEY,
-    ->     application_id INT,
-    ->     language_id INT,
-    ->     FOREIGN KEY (application_id) REFERENCES application(id)
-    -> );
-ERROR 1046 (3D000): No database selected
-mysql> CREATE TABLE application (
-    ->     id INT AUTO_INCREMENT PRIMARY KEY,
-    ->     name VARCHAR(150),
-    ->     phone VARCHAR(20),
-    ->     email VARCHAR(100),
-    ->     birthdate DATE,
-    ->     gender ENUM('male','female'),
-    ->     bio TEXT,
-    ->     contract TINYINT(1),
-    ->     login VARCHAR(50),
-    ->     pass_hash VARCHAR(255),
-    ->     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    -> );
-plicatioERROR 1046 (3D000): No database selected
-mysql>
-mysql> CREATE TABLE application_language (
-MENT    ->     id INT AUTO_INCREMENT PRIMARY KEY,
-    ->     application_id INT,
-    ->     language_id INT,
-(applic    ->     FOREIGN KEY (application_id) REFERENCES application(id)
-    -> );
-ERROR 1046 (3D000): No database selected
-mysql>
+ERROR 1050 (42S01): Table 'application_language' already exists
