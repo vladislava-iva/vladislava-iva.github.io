@@ -158,10 +158,10 @@ $message = '';
 if (isset($_GET['msg'])) {
 switch ($_GET['msg']) {
 case 'deleted':
-$message = '<div class="success-msg">✩ Пользователь успешно удален</div>';
+$message = '<div class="success-msg">Пользователь успешно удален</div>';
 break;
 case 'updated':
-$message = '<div class="success-msg">✩ Данные пользователя успешно обновлены</div>';
+$message = '<div class="success-msg">Данные пользователя успешно обновлены</div>';
 break;
 }
 }
@@ -511,10 +511,10 @@ $totalUsers = count($users);
             </td>
             <td>
                 <div class="action-buttons">
-                    <a href="admin.php?action=edit&id=<?php echo $user['id']; ?>" class="btn-edit">✿ Редакт.</a>
+                    <a href="admin.php?action=edit&id=<?php echo $user['id']; ?>" class="btn-edit">Редакт.</a>
                     <a href="admin.php?action=delete&id=<?php echo $user['id']; ?>"
                        class="btn-delete"
-                       onclick="return confirm('Удалить пользователя <?php echo htmlspecialchars($user['fio']); ?>?')">✿ Удалить</a>
+                       onclick="return confirm('Удалить пользователя <?php echo htmlspecialchars($user['fio']); ?>?')">Удалить</a>
                 </div>
             </td>
         </tr>
