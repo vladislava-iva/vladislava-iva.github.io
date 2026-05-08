@@ -1,0 +1,22 @@
+ALTER TABLE languages ADD COLUMN name VARCHAR(50) NOT NULL DEFAULT '';
+
+UPDATE languages SET name = 'Pascal' WHERE code = 'pascal';
+UPDATE languages SET name = 'C' WHERE code = 'c';
+UPDATE languages SET name = 'C++' WHERE code = 'cpp';
+UPDATE languages SET name = 'JavaScript' WHERE code = 'javascript';
+UPDATE languages SET name = 'PHP' WHERE code = 'php';
+UPDATE languages SET name = 'Python' WHERE code = 'python';
+UPDATE languages SET name = 'Java' WHERE code = 'java';
+UPDATE languages SET name = 'Haskell' WHERE code = 'haskell';
+UPDATE languages SET name = 'Clojure' WHERE code = 'clojure';
+UPDATE languages SET name = 'Prolog' WHERE code = 'prolog';
+UPDATE languages SET name = 'Scala' WHERE code = 'scala';
+UPDATE languages SET name = 'Go' WHERE code = 'go';
+
+CREATE TABLE IF NOT EXISTS admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    login VARCHAR(50) NOT NULL UNIQUE,
+    pass_hash VARCHAR(32) NOT NULL
+);
+
+INSERT INTO admins (login, pass_hash) VALUES ('admin', MD5('admin123'));
