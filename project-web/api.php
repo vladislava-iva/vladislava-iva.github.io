@@ -1,250 +1,335 @@
 <?php
 /**
- * Веб-сервис для обработки формы обратной связи.
+ * api.php — REST веб-сервис для формы обратной связи.
  *
- * POST /api.php          — регистрация (без авторизации)
- * PUT  /api.php          — обновление профиля (с авторизацией)
- * GET  /api.php?login=X  — получение профиля (с авторизацией)
+ * Единая точка входа. Маршрутизация по HTTP-методу:
+ *   GET  /api.php                  — профиль авторизованного пользователя
+ *   POST /api.php                  — регистрация нового пользователя
+ *   PUT  /api.php                  — обновление данных (требует авторизации)
  *
- * Принимает JSON или XML (определяется по Content-Type).
- * Данные хранятся в файле users.json рядом со скриптом.
+ * Авторизация: HTTP Basic Auth (login:password в заголовке Authorization).
  */
 
+declare(strict_types=1);
+
+// ─── Настройки БД ─────────────────────────────────────────────────────────────
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'u82419');
+define('DB_USER', 'u82419');
+define('DB_PASS', '7111555');
+define('DB_CHARSET', 'utf8mb4');
+
+// ─── Заголовки ────────────────────────────────────────────────────────────────
 header('Content-Type: application/json; charset=utf-8');
+
+// Разрешаем CORS для локальной разработки (при необходимости уберите)
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-// Preflight CORS
+// Preflight-запрос браузера
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;
 }
 
-// ─── Хранилище ────────────────────────────────────────────────────────────────
-
-define('DB_FILE', __DIR__ . '/users.json');
-
-function loadUsers(): array {
-    if (!file_exists(DB_FILE)) return [];
-    $raw = file_get_contents(DB_FILE);
-    return json_decode($raw, true) ?: [];
+// ─── Подключение к БД ─────────────────────────────────────────────────────────
+function getDb(): PDO
+{
+    static $pdo = null;
+    if ($pdo === null) {
+        $dsn = sprintf(
+            'mysql:host=%s;dbname=%s;charset=%s',
+            DB_HOST, DB_NAME, DB_CHARSET
+        );
+        $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES   => false,
+        ]);
+    }
+    return $pdo;
 }
 
-function saveUsers(array $users): void {
-    file_put_contents(DB_FILE, json_encode($users, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+// ─── Создание таблицы при первом запуске ──────────────────────────────────────
+function ensureTable(): void
+{
+    getDb()->exec("
+        CREATE TABLE IF NOT EXISTS users (
+            id         INT AUTO_INCREMENT PRIMARY KEY,
+            login      VARCHAR(64)  NOT NULL UNIQUE,
+            password   VARCHAR(255) NOT NULL,
+            name       VARCHAR(128) NOT NULL,
+            email      VARCHAR(128) NOT NULL,
+            phone      VARCHAR(32)  DEFAULT '',
+            comment    TEXT         DEFAULT '',
+            created_at DATETIME     DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+    ");
 }
 
-// ─── Вспомогательные функции ─────────────────────────────────────────────────
+// ─── Утилиты ──────────────────────────────────────────────────────────────────
 
-function respond(int $code, array $body): void {
+/** Отправляет JSON-ответ и завершает скрипт. */
+function respond(array $data, int $code = 200): void
+{
     http_response_code($code);
-    echo json_encode($body, JSON_UNESCAPED_UNICODE);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     exit;
 }
 
-function generateLogin(string $name): string {
-    $base = strtolower(preg_replace('/[^a-zA-Zа-яА-ЯёЁ0-9]/u', '', $name));
-    if (empty($base)) $base = 'user';
-    return $base . rand(100, 9999);
-}
-
-function generatePassword(int $len = 10): string {
-    $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
-    $pass  = '';
-    for ($i = 0; $i < $len; $i++) {
-        $pass .= $chars[random_int(0, strlen($chars) - 1)];
-    }
-    return $pass;
-}
-
-/** Парсит тело запроса как JSON или XML. */
-function parseBody(): ?array {
+/** Читает тело запроса как JSON (для POST/PUT с Content-Type: application/json).
+ *  Для обычного POST (fallback без JS) читает $_POST. */
+function getInput(): array
+{
     $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-    $raw = file_get_contents('php://input');
-    if (empty($raw)) return null;
 
-    if (stripos($contentType, 'application/xml') !== false ||
-        stripos($contentType, 'text/xml') !== false) {
-        // XML
-        libxml_use_internal_errors(true);
-        $xml = simplexml_load_string($raw);
-        if ($xml === false) return null;
-        return json_decode(json_encode($xml), true);
+    if (str_contains($contentType, 'application/json')) {
+        $raw = file_get_contents('php://input');
+        $data = json_decode($raw, true);
+        return is_array($data) ? $data : [];
     }
 
-    // По умолчанию — JSON
-    return json_decode($raw, true);
+    // Fallback: обычная HTML-форма без JavaScript
+    return $_POST;
 }
 
-/** Базовая валидация полей формы. */
-function validateFields(array $data, bool $requireAll = true): array {
+/** Валидирует входные данные формы. Возвращает массив ошибок (пустой — если всё ОК). */
+function validate(array $data): array
+{
     $errors = [];
 
-    // Имя
-    if ($requireAll || isset($data['name'])) {
-        $name = trim($data['name'] ?? '');
-        if (empty($name)) {
-            $errors[] = 'Поле "name" обязательно.';
-        } elseif (mb_strlen($name) < 2) {
-            $errors[] = 'Имя должно быть не менее 2 символов.';
-        }
+    $name = trim($data['name'] ?? '');
+    if ($name === '') {
+        $errors[] = 'Имя обязательно.';
+    } elseif (mb_strlen($name) > 128) {
+        $errors[] = 'Имя слишком длинное (макс. 128 символов).';
     }
 
-    // Email
-    if ($requireAll || isset($data['email'])) {
-        $email = trim($data['email'] ?? '');
-        if (empty($email)) {
-            $errors[] = 'Поле "email" обязательно.';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Некорректный email.';
-        }
+    $email = trim($data['email'] ?? '');
+    if ($email === '') {
+        $errors[] = 'Email обязателен.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Некорректный email.';
     }
 
-    // Телефон (необязательный, но если указан — валидируем)
-    if (isset($data['phone']) && $data['phone'] !== '') {
-        $phone = preg_replace('/\D/', '', $data['phone']);
-        if (strlen($phone) < 7 || strlen($phone) > 15) {
-            $errors[] = 'Некорректный номер телефона.';
-        }
+    $phone = trim($data['phone'] ?? '');
+    if ($phone !== '' && !preg_match('/^[\d\s\+\-\(\)]{7,20}$/', $phone)) {
+        $errors[] = 'Некорректный номер телефона.';
     }
 
-    // Комментарий
-    if ($requireAll || isset($data['comment'])) {
-        $comment = trim($data['comment'] ?? '');
-        if (empty($comment)) {
-            $errors[] = 'Поле "comment" обязательно.';
-        }
+    $comment = trim($data['comment'] ?? '');
+    if ($comment === '') {
+        $errors[] = 'Комментарий обязателен.';
     }
 
     return $errors;
 }
 
-/** Возвращает текущего авторизованного пользователя или null. */
-function getAuthorizedUser(array $users): ?array {
-    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-    if (!preg_match('/^Basic\s+(.+)$/i', $authHeader, $m)) return null;
+/** Разбирает заголовок Authorization: Basic ... и возвращает ['login', 'password'] или null. */
+function parseBasicAuth(): ?array
+{
+    // PHP может передавать заголовок по-разному в зависимости от конфигурации сервера
+    $header = $_SERVER['HTTP_AUTHORIZATION']
+           ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
+           ?? '';
 
-    $decoded = base64_decode($m[1]);
-    [$login, $password] = explode(':', $decoded, 2) + ['', ''];
-
-    foreach ($users as $u) {
-        if ($u['login'] === $login && password_verify($password, $u['password_hash'])) {
-            return $u;
-        }
+    if (!str_starts_with($header, 'Basic ')) {
+        return null;
     }
-    return null;
+
+    $decoded = base64_decode(substr($header, 6), true);
+    if ($decoded === false) return null;
+
+    $parts = explode(':', $decoded, 2);
+    return count($parts) === 2 ? $parts : null;
 }
 
-// ─── Маршрутизация ────────────────────────────────────────────────────────────
+/** Ищет пользователя по логину и проверяет пароль. Возвращает строку из БД или null. */
+function authenticate(): ?array
+{
+    $creds = parseBasicAuth();
+    if ($creds === null) return null;
+
+    [$login, $password] = $creds;
+
+    $stmt = getDb()->prepare('SELECT * FROM users WHERE login = ? LIMIT 1');
+    $stmt->execute([$login]);
+    $user = $stmt->fetch();
+
+    if (!$user) return null;
+    if (!password_verify($password, $user['password'])) return null;
+
+    return $user;
+}
+
+/** Генерирует уникальный логин на основе имени. */
+function generateLogin(string $name): string
+{
+    // Транслитерируем кириллицу → латиница
+    $translit = [
+        'а'=>'a','б'=>'b','в'=>'v','г'=>'g','д'=>'d','е'=>'e','ё'=>'yo',
+        'ж'=>'zh','з'=>'z','и'=>'i','й'=>'j','к'=>'k','л'=>'l','м'=>'m',
+        'н'=>'n','о'=>'o','п'=>'p','р'=>'r','с'=>'s','т'=>'t','у'=>'u',
+        'ф'=>'f','х'=>'h','ц'=>'ts','ч'=>'ch','ш'=>'sh','щ'=>'sch',
+        'ъ'=>'','ы'=>'y','ь'=>'','э'=>'e','ю'=>'yu','я'=>'ya',
+    ];
+
+    $lower = mb_strtolower($name);
+    $latin = strtr($lower, $translit);
+    $base  = preg_replace('/[^a-z0-9]/', '', $latin);
+    $base  = $base ?: 'user';
+    $base  = substr($base, 0, 20);
+
+    // Убеждаемся в уникальности
+    $login  = $base;
+    $suffix = 1;
+    $stmt   = getDb()->prepare('SELECT id FROM users WHERE login = ? LIMIT 1');
+
+    while (true) {
+        $stmt->execute([$login]);
+        if (!$stmt->fetch()) break;
+        $login = $base . $suffix;
+        $suffix++;
+    }
+
+    return $login;
+}
+
+/** Генерирует случайный пароль. */
+function generatePassword(int $length = 10): string
+{
+    $chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    $pass  = '';
+    $max   = strlen($chars) - 1;
+    for ($i = 0; $i < $length; $i++) {
+        $pass .= $chars[random_int(0, $max)];
+    }
+    return $pass;
+}
+
+// ─── Основная логика ─────────────────────────────────────────────────────────
+
+try {
+    ensureTable();
+} catch (PDOException $e) {
+    respond(['success' => false, 'message' => 'Ошибка подключения к базе данных.'], 500);
+}
 
 $method = $_SERVER['REQUEST_METHOD'];
-$users  = loadUsers();
 
-// GET /api.php — получить профиль авторизованного пользователя
+// ── GET: вернуть профиль авторизованного пользователя ────────────────────────
 if ($method === 'GET') {
-    $user = getAuthorizedUser($users);
+    $user = authenticate();
     if (!$user) {
-        respond(401, ['success' => false, 'message' => 'Необходима авторизация.']);
+        respond(['success' => false, 'message' => 'Требуется авторизация.'], 401);
     }
-    respond(200, [
+
+    respond([
         'success' => true,
         'profile' => [
             'login'   => $user['login'],
             'name'    => $user['name'],
             'email'   => $user['email'],
-            'phone'   => $user['phone'] ?? '',
-            'comment' => $user['comment'] ?? '',
+            'phone'   => $user['phone'],
+            'comment' => $user['comment'],
         ],
     ]);
 }
 
-// POST /api.php — регистрация нового пользователя
+// ── POST: регистрация нового пользователя ─────────────────────────────────────
 if ($method === 'POST') {
-    $data = parseBody();
-    if (!$data) {
-        respond(400, ['success' => false, 'message' => 'Не удалось разобрать тело запроса (ожидается JSON или XML).']);
-    }
+    $input  = getInput();
+    $errors = validate($input);
 
-    // Если пользователь уже авторизован — не регистрируем повторно
-    $existing = getAuthorizedUser($users);
-    if ($existing) {
-        respond(400, ['success' => false, 'message' => 'Вы уже зарегистрированы. Используйте PUT для обновления данных.']);
-    }
-
-    $errors = validateFields($data, true);
     if ($errors) {
-        respond(422, ['success' => false, 'errors' => $errors]);
-    }
-
-    $email = strtolower(trim($data['email']));
-    // Проверка уникальности email
-    foreach ($users as $u) {
-        if ($u['email'] === $email) {
-            respond(409, ['success' => false, 'message' => 'Пользователь с таким email уже существует.']);
+        // Если запрос пришёл без JS (обычная форма) — выводим читаемый HTML
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        if (!str_contains($contentType, 'application/json')) {
+            http_response_code(422);
+            header('Content-Type: text/html; charset=utf-8');
+            echo '<h2>Ошибки валидации:</h2><ul>';
+            foreach ($errors as $err) {
+                echo '<li>' . htmlspecialchars($err) . '</li>';
+            }
+            echo '</ul><p><a href="javascript:history.back()">← Вернуться</a></p>';
+            exit;
         }
+        respond(['success' => false, 'errors' => $errors], 422);
     }
 
-    $login    = generateLogin($data['name']);
+    $login    = generateLogin(trim($input['name']));
     $password = generatePassword();
+    $hash     = password_hash($password, PASSWORD_BCRYPT);
 
-    $newUser = [
-        'login'         => $login,
-        'password_hash' => password_hash($password, PASSWORD_BCRYPT),
-        'name'          => trim($data['name']),
-        'email'         => $email,
-        'phone'         => trim($data['phone'] ?? ''),
-        'comment'       => trim($data['comment']),
-        'created_at'    => date('c'),
-    ];
+    try {
+        $stmt = getDb()->prepare(
+            'INSERT INTO users (login, password, name, email, phone, comment)
+             VALUES (?, ?, ?, ?, ?, ?)'
+        );
+        $stmt->execute([
+            $login,
+            $hash,
+            trim($input['name']),
+            trim($input['email']),
+            trim($input['phone']   ?? ''),
+            trim($input['comment'] ?? ''),
+        ]);
+    } catch (PDOException $e) {
+        respond(['success' => false, 'message' => 'Ошибка при сохранении данных.'], 500);
+    }
 
-    $users[] = $newUser;
-    saveUsers($users);
+    // Fallback без JS: показываем HTML-страницу с логином и паролем
+    $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+    if (!str_contains($contentType, 'application/json')) {
+        header('Content-Type: text/html; charset=utf-8');
+        echo '<h2>✅ Заявка принята!</h2>';
+        echo '<p><strong>Логин:</strong> ' . htmlspecialchars($login) . '</p>';
+        echo '<p><strong>Пароль:</strong> ' . htmlspecialchars($password) . '</p>';
+        echo '<p>⚠️ Сохраните эти данные — пароль больше не будет показан.</p>';
+        echo '<p><a href="/">← На главную</a></p>';
+        exit;
+    }
 
-    respond(201, [
-        'success'      => true,
-        'message'      => 'Пользователь успешно зарегистрирован.',
-        'login'        => $login,
-        'password'     => $password,   // возвращаем пароль в открытом виде только при создании
-        'profile_url'  => (isset($_SERVER['HTTPS']) ? 'https' : 'http')
-                          . '://' . $_SERVER['HTTP_HOST']
-                          . '/api.php?profile=' . urlencode($login),
-    ]);
+    respond([
+        'success'    => true,
+        'login'      => $login,
+        'password'   => $password,
+        'profileUrl' => '/api.php',   // адрес для GET-запроса профиля
+    ], 201);
 }
 
-// PUT /api.php — обновление данных авторизованного пользователя
+// ── PUT: обновление данных авторизованного пользователя ──────────────────────
 if ($method === 'PUT') {
-    $user = getAuthorizedUser($users);
+    $user = authenticate();
     if (!$user) {
-        respond(401, ['success' => false, 'message' => 'Необходима авторизация (Basic login:password).']);
+        respond(['success' => false, 'message' => 'Требуется авторизация.'], 401);
     }
 
-    $data = parseBody();
-    if (!$data) {
-        respond(400, ['success' => false, 'message' => 'Не удалось разобрать тело запроса.']);
-    }
+    $input  = getInput();
+    $errors = validate($input);
 
-    $errors = validateFields($data, false);
     if ($errors) {
-        respond(422, ['success' => false, 'errors' => $errors]);
+        respond(['success' => false, 'errors' => $errors], 422);
     }
 
-    // Обновляем всё, кроме login и password
-    foreach ($users as &$u) {
-        if ($u['login'] === $user['login']) {
-            if (isset($data['name']))    $u['name']    = trim($data['name']);
-            if (isset($data['email']))   $u['email']   = strtolower(trim($data['email']));
-            if (isset($data['phone']))   $u['phone']   = trim($data['phone']);
-            if (isset($data['comment'])) $u['comment'] = trim($data['comment']);
-            $u['updated_at'] = date('c');
-            break;
-        }
+    try {
+        $stmt = getDb()->prepare(
+            'UPDATE users SET name=?, email=?, phone=?, comment=? WHERE id=?'
+        );
+        $stmt->execute([
+            trim($input['name']),
+            trim($input['email']),
+            trim($input['phone']   ?? ''),
+            trim($input['comment'] ?? ''),
+            $user['id'],
+        ]);
+    } catch (PDOException $e) {
+        respond(['success' => false, 'message' => 'Ошибка при обновлении данных.'], 500);
     }
-    unset($u);
 
-    saveUsers($users);
-    respond(200, ['success' => true, 'message' => 'Данные профиля успешно обновлены.']);
+    respond(['success' => true, 'message' => 'Данные успешно обновлены.']);
 }
 
-// Метод не поддерживается
-respond(405, ['success' => false, 'message' => 'Метод не поддерживается.']);
+// ── Остальные методы не поддерживаются ───────────────────────────────────────
+respond(['success' => false, 'message' => 'Метод не поддерживается.'], 405);
