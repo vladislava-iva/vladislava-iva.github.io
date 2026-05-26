@@ -51,22 +51,6 @@ function getDb(): PDO
     return $pdo;
 }
 
-// ─── Создание таблицы при первом запуске ──────────────────────────────────────
-function ensureTable(): void
-{
-    getDb()->exec("
-        CREATE TABLE IF NOT EXISTS users (
-            id         INT AUTO_INCREMENT PRIMARY KEY,
-            login      VARCHAR(64)  NOT NULL UNIQUE,
-            password   VARCHAR(255) NOT NULL,
-            name       VARCHAR(128) NOT NULL,
-            email      VARCHAR(128) NOT NULL,
-            phone      VARCHAR(32)  DEFAULT '',
-            comment    TEXT         DEFAULT '',
-            created_at DATETIME     DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-    ");
-}
 
 // ─── Утилиты ──────────────────────────────────────────────────────────────────
 
@@ -209,13 +193,6 @@ function generatePassword(int $length = 10): string
 }
 
 // ─── Основная логика ─────────────────────────────────────────────────────────
-
-try {
-    ensureTable();
-} catch (PDOException $e) {
-    //respond(['success' => false, 'message' => 'Ошибка подключения к базе данных.'], 500);
-    die ($e->getMessage());
-}
 
 $method = $_SERVER['REQUEST_METHOD'];
 
