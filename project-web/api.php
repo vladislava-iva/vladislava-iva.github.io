@@ -45,7 +45,7 @@ function getDb(): PDO
         $pdo = new PDO($dsn, DB_USER, DB_PASS, [
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false,
+            //PDO::ATTR_EMULATE_PREPARES   => false,
         ]);
     }
     return $pdo;
@@ -213,7 +213,8 @@ function generatePassword(int $length = 10): string
 try {
     ensureTable();
 } catch (PDOException $e) {
-    respond(['success' => false, 'message' => 'Ошибка подключения к базе данных.'], 500);
+    //respond(['success' => false, 'message' => 'Ошибка подключения к базе данных.'], 500);
+    die ($e->getMessage());
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
