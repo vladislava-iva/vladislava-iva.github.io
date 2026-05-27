@@ -2,85 +2,49 @@
 /**
  * api.php — REST веб-сервис для формы обратной связи.
  *
- * Единая точка входа. Маршрутизация по HTTP-методу:
- *   GET  /api.php                  — профиль авторизованного пользователя
- *   POST /api.php                  — регистрация нового пользователя
- *   PUT  /api.php                  — обновление данных (требует авторизации)
- *
- * Авторизация: HTTP Basic Auth (login:password в заголовке Authorization).
+ * GET  /api.php  — профиль авторизованного пользователя (Basic Auth)
+ * POST /api.php  — регистрация нового пользователя
+ * PUT  /api.php  — обновление данных (Basic Auth)
  */
 
-declare(strict_types=1);
-
-// ─── Настройки БД ─────────────────────────────────────────────────────────────
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'u82419');
-define('DB_USER', 'u82419');
-define('DB_PASS', '7111555');
-define('DB_CHARSET', 'utf8mb4');
+// ─── Подключение к БД (как в рабочем задании) ────────────────────────────────
+$user = 'u82419';
+$pass = '7111555';
+$db = new PDO(
+    "mysql:host=localhost;dbname=$user;charset=utf8mb4", $user, $pass,
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+);
 
 // ─── Заголовки ────────────────────────────────────────────────────────────────
 header('Content-Type: application/json; charset=utf-8');
-
-// Разрешаем CORS для локальной разработки (при необходимости уберите)
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-// Preflight-запрос браузера
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;
 }
 
-// ─── Подключение к БД ─────────────────────────────────────────────────────────
-function getDb(): PDO
-{
-    static $pdo = null;
-    if ($pdo === null) {
-        $dsn = sprintf(
-            'mysql:host=%s;dbname=%s;charset=%s',
-            DB_HOST, DB_NAME, DB_CHARSET
-        );
-        $pdo = new PDO($dsn, DB_USER, DB_PASS, [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            //PDO::ATTR_EMULATE_PREPARES   => false,
-        ]);
-    }
-    return $pdo;
-}
+// ─── Вспомогательные функции ─────────────────────────────────────────────────
 
-
-// ─── Утилиты ──────────────────────────────────────────────────────────────────
-
-/** Отправляет JSON-ответ и завершает скрипт. */
-function respond(array $data, int $code = 200): void
-{
+function respond(int $code, array $body): void {
     http_response_code($code);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    echo json_encode($body, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     exit;
 }
 
-/** Читает тело запроса как JSON (для POST/PUT с Content-Type: application/json).
- *  Для обычного POST (fallback без JS) читает $_POST. */
-function getInput(): array
-{
+function getInput(): array {
     $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-
-    if (str_contains($contentType, 'application/json')) {
+    if (stripos($contentType, 'application/json') !== false) {
         $raw = file_get_contents('php://input');
         $data = json_decode($raw, true);
         return is_array($data) ? $data : [];
     }
-
-    // Fallback: обычная HTML-форма без JavaScript
     return $_POST;
 }
 
-/** Валидирует входные данные формы. Возвращает массив ошибок (пустой — если всё ОК). */
-function validate(array $data): array
-{
+function validate(array $data): array {
     $errors = [];
 
     $name = trim($data['name'] ?? '');
@@ -110,17 +74,29 @@ function validate(array $data): array
     return $errors;
 }
 
-/** Разбирает заголовок Authorization: Basic ... и возвращает ['login', 'password'] или null. */
-function parseBasicAuth(): ?array
-{
-    // PHP может передавать заголовок по-разному в зависимости от конфигурации сервера
+/** Генерация логина — как в рабочем задании (_yes): uniqid() обрезанный до 8 символов */
+function generateLogin(): string {
+    global $db;
+    do {
+        $login = substr(uniqid(), 0, 8);
+        $stmt = $db->prepare("SELECT id FROM users WHERE login = ? LIMIT 1");
+        $stmt->execute([$login]);
+    } while ($stmt->fetch()); // повторяем пока не уникальный
+    return $login;
+}
+
+/** Генерация пароля — как в рабочем задании (_yes): md5(rand()) обрезанный до 8 символов */
+function generatePassword(): string {
+    return substr(md5(rand()), 0, 8);
+}
+
+/** Разбирает Authorization: Basic ... → ['login', 'password'] или null */
+function parseBasicAuth(): ?array {
     $header = $_SERVER['HTTP_AUTHORIZATION']
            ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
            ?? '';
 
-    if (!str_starts_with($header, 'Basic ')) {
-        return null;
-    }
+    if (stripos($header, 'Basic ') !== 0) return null;
 
     $decoded = base64_decode(substr($header, 6), true);
     if ($decoded === false) return null;
@@ -129,81 +105,38 @@ function parseBasicAuth(): ?array
     return count($parts) === 2 ? $parts : null;
 }
 
-/** Ищет пользователя по логину и проверяет пароль. Возвращает строку из БД или null. */
-function authenticate(): ?array
-{
+/** Авторизация через Basic Auth. Проверяет md5 (как в _yes) и bcrypt */
+function authenticate(): ?array {
+    global $db;
     $creds = parseBasicAuth();
     if ($creds === null) return null;
 
     [$login, $password] = $creds;
 
-    $stmt = getDb()->prepare('SELECT * FROM users WHERE login = ? LIMIT 1');
+    $stmt = $db->prepare("SELECT * FROM users WHERE login = ? LIMIT 1");
     $stmt->execute([$login]);
-    $user = $stmt->fetch();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) return null;
-    if (!password_verify($password, $user['password'])) return null;
 
-    return $user;
+    // Поддерживаем оба формата хэша: md5 (старый) и bcrypt (новый)
+    if ($user['pass_hash'] === md5($password)) return $user;
+    if (password_verify($password, $user['pass_hash'])) return $user;
+
+    return null;
 }
 
-/** Генерирует уникальный логин на основе имени. */
-function generateLogin(string $name): string
-{
-    // Транслитерируем кириллицу → латиница
-    $translit = [
-        'а'=>'a','б'=>'b','в'=>'v','г'=>'g','д'=>'d','е'=>'e','ё'=>'yo',
-        'ж'=>'zh','з'=>'z','и'=>'i','й'=>'j','к'=>'k','л'=>'l','м'=>'m',
-        'н'=>'n','о'=>'o','п'=>'p','р'=>'r','с'=>'s','т'=>'t','у'=>'u',
-        'ф'=>'f','х'=>'h','ц'=>'ts','ч'=>'ch','ш'=>'sh','щ'=>'sch',
-        'ъ'=>'','ы'=>'y','ь'=>'','э'=>'e','ю'=>'yu','я'=>'ya',
-    ];
-
-    $lower = mb_strtolower($name);
-    $latin = strtr($lower, $translit);
-    $base  = preg_replace('/[^a-z0-9]/', '', $latin);
-    $base  = $base ?: 'user';
-    $base  = substr($base, 0, 20);
-
-    // Убеждаемся в уникальности
-    $login  = $base;
-    $suffix = 1;
-    $stmt   = getDb()->prepare('SELECT id FROM users WHERE login = ? LIMIT 1');
-
-    while (true) {
-        $stmt->execute([$login]);
-        if (!$stmt->fetch()) break;
-        $login = $base . $suffix;
-        $suffix++;
-    }
-
-    return $login;
-}
-
-/** Генерирует случайный пароль. */
-function generatePassword(int $length = 10): string
-{
-    $chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
-    $pass  = '';
-    $max   = strlen($chars) - 1;
-    for ($i = 0; $i < $length; $i++) {
-        $pass .= $chars[random_int(0, $max)];
-    }
-    return $pass;
-}
-
-// ─── Основная логика ─────────────────────────────────────────────────────────
+// ─── Маршрутизация ────────────────────────────────────────────────────────────
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-// ── GET: вернуть профиль авторизованного пользователя ────────────────────────
+// GET — профиль авторизованного пользователя
 if ($method === 'GET') {
     $user = authenticate();
     if (!$user) {
-        respond(['success' => false, 'message' => 'Требуется авторизация.'], 401);
+        respond(401, ['success' => false, 'message' => 'Требуется авторизация.']);
     }
-
-    respond([
+    respond(200, [
         'success' => true,
         'profile' => [
             'login'   => $user['login'],
@@ -215,85 +148,86 @@ if ($method === 'GET') {
     ]);
 }
 
-// ── POST: регистрация нового пользователя ─────────────────────────────────────
+// POST — регистрация нового пользователя
 if ($method === 'POST') {
     $input  = getInput();
     $errors = validate($input);
 
     if ($errors) {
-        // Если запрос пришёл без JS (обычная форма) — выводим читаемый HTML
         $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-        if (!str_contains($contentType, 'application/json')) {
+        if (stripos($contentType, 'application/json') === false) {
+            // Fallback без JS — возвращаем HTML
             http_response_code(422);
             header('Content-Type: text/html; charset=utf-8');
             echo '<h2>Ошибки валидации:</h2><ul>';
             foreach ($errors as $err) {
-                echo '<li>' . htmlspecialchars($err) . '</li>';
+                echo '<li>' . htmlspecialchars($err, ENT_QUOTES, 'UTF-8') . '</li>';
             }
             echo '</ul><p><a href="javascript:history.back()">← Вернуться</a></p>';
             exit;
         }
-        respond(['success' => false, 'errors' => $errors], 422);
+        respond(422, ['success' => false, 'errors' => $errors]);
     }
 
-    $login    = generateLogin(trim($input['name']));
+    $login    = generateLogin();
     $password = generatePassword();
-    $hash     = password_hash($password, PASSWORD_BCRYPT);
+    $passHash = md5($password); // как в _yes
 
     try {
-        $stmt = getDb()->prepare(
-            'INSERT INTO users (login, password, name, email, phone, comment)
-             VALUES (?, ?, ?, ?, ?, ?)'
+        $stmt = $db->prepare(
+            "INSERT INTO users (login, pass_hash, name, email, phone, comment)
+             VALUES (?, ?, ?, ?, ?, ?)"
         );
         $stmt->execute([
             $login,
-            $hash,
+            $passHash,
             trim($input['name']),
             trim($input['email']),
-            trim($input['phone']   ?? ''),
-            trim($input['comment'] ?? ''),
+            trim($input['phone']    ?? ''),
+            trim($input['comment']  ?? ''),
         ]);
     } catch (PDOException $e) {
-        respond(['success' => false, 'message' => 'Ошибка при сохранении данных.'], 500);
+        error_log('DB error POST: ' . $e->getMessage());
+        respond(500, ['success' => false, 'message' => 'Ошибка при сохранении данных.']);
     }
 
-    // Fallback без JS: показываем HTML-страницу с логином и паролем
+    // Fallback без JS — возвращаем HTML
     $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-    if (!str_contains($contentType, 'application/json')) {
+    if (stripos($contentType, 'application/json') === false) {
         header('Content-Type: text/html; charset=utf-8');
         echo '<h2>✅ Заявка принята!</h2>';
-        echo '<p><strong>Логин:</strong> ' . htmlspecialchars($login) . '</p>';
-        echo '<p><strong>Пароль:</strong> ' . htmlspecialchars($password) . '</p>';
+        echo '<p><strong>Логин:</strong> ' . htmlspecialchars($login, ENT_QUOTES, 'UTF-8') . '</p>';
+        echo '<p><strong>Пароль:</strong> ' . htmlspecialchars($password, ENT_QUOTES, 'UTF-8') . '</p>';
         echo '<p>⚠️ Сохраните эти данные — пароль больше не будет показан.</p>';
-        echo '<p><a href="/">← На главную</a></p>';
+        echo '<p><a href="index.html">← На главную</a></p>';
         exit;
     }
 
-    respond([
+    respond(201, [
         'success'    => true,
         'login'      => $login,
         'password'   => $password,
-        'profileUrl' => '/api.php',   // адрес для GET-запроса профиля
-    ], 201);
+        'profileUrl' => '/api.php',
+    ]);
 }
 
-// ── PUT: обновление данных авторизованного пользователя ──────────────────────
+// PUT — обновление данных авторизованного пользователя
 if ($method === 'PUT') {
     $user = authenticate();
     if (!$user) {
-        respond(['success' => false, 'message' => 'Требуется авторизация.'], 401);
+        respond(401, ['success' => false, 'message' => 'Требуется авторизация.']);
     }
 
     $input  = getInput();
     $errors = validate($input);
 
     if ($errors) {
-        respond(['success' => false, 'errors' => $errors], 422);
+        respond(422, ['success' => false, 'errors' => $errors]);
     }
 
     try {
-        $stmt = getDb()->prepare(
-            'UPDATE users SET name=?, email=?, phone=?, comment=? WHERE id=?'
+        $stmt = $db->prepare(
+            "UPDATE users SET name=?, email=?, phone=?, comment=? WHERE id=?"
         );
         $stmt->execute([
             trim($input['name']),
@@ -303,11 +237,11 @@ if ($method === 'PUT') {
             $user['id'],
         ]);
     } catch (PDOException $e) {
-        respond(['success' => false, 'message' => 'Ошибка при обновлении данных.'], 500);
+        error_log('DB error PUT: ' . $e->getMessage());
+        respond(500, ['success' => false, 'message' => 'Ошибка при обновлении данных.']);
     }
 
-    respond(['success' => true, 'message' => 'Данные успешно обновлены.']);
+    respond(200, ['success' => true, 'message' => 'Данные успешно обновлены.']);
 }
 
-// ── Остальные методы не поддерживаются ───────────────────────────────────────
-respond(['success' => false, 'message' => 'Метод не поддерживается.'], 405);
+respond(405, ['success' => false, 'message' => 'Метод не поддерживается.']);
