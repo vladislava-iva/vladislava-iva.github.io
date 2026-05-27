@@ -1,1 +1,9 @@
-mysql> SHOW TABLES;                                                                                                     +------------------+                                                                                                    | Tables_in_u82419 |                                                                                                    +------------------+                                                                                                    | admins           |                                                                                                    | app              |                                                                                                    | app_languages    |                                                                                                    | application      |                                                                                                    | language         |                                                                                                    | languages        |                                                                                                    +------------------+                                                                                                    6 rows in set (0.00 sec) 
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    login VARCHAR(64) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    name VARCHAR(128) NOT NULL,
+    email VARCHAR(128) NOT NULL,
+    phone VARCHAR(32) DEFAULT '',
+    comment TEXT DEFAULT ''
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
