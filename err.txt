@@ -7,3 +7,4 @@ CREATE TABLE users (
     phone VARCHAR(32) DEFAULT '',
     comment TEXT DEFAULT ''
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+ERROR 1101 (42000): BLOB, TEXT, GEOMETRY or JSON column 'comment' can't have a default value 
