@@ -1,6 +1,6 @@
 <?php
 /**
- * api.php — Рабочая версия для таблицы users
+ * api.php — РАБОЧАЯ ВЕРСИЯ для таблицы users
  */
 
 $user = 'u82419';
@@ -73,11 +73,8 @@ function generatePassword(): string {
     return substr(md5(rand()), 0, 8);
 }
 
-// ==================== ОСНОВНАЯ ЛОГИКА ====================
-
-$method = $_SERVER['REQUEST_METHOD'];
-
-if ($method === 'POST') {
+// ==================== POST — ОСНОВНОЙ ОБРАБОТЧИК ====================
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = getInput();
     $errors = validate($input);
 
@@ -108,19 +105,9 @@ if ($method === 'POST') {
         ]);
 
     } catch (PDOException $e) {
-        error_log("INSERT ERROR: " . $e->getMessage());
-        respond(500, ['success' => false, 'message' => 'Ошибка базы данных']);
+        error_log("DB ERROR: " . $e->getMessage());
+        respond(500, ['success' => false, 'message' => 'Ошибка базы данных: ' . $e->getMessage()]);
     }
-}
-
-if ($method === 'GET') {
-    // Простая заглушка для теста
-    respond(200, ['success' => true, 'message' => 'GET работает']);
-}
-
-// PUT — потом добавим
-if ($method === 'PUT') {
-    respond(200, ['success' => true, 'message' => 'PUT пока не реализован']);
 }
 
 respond(405, ['success' => false, 'message' => 'Метод не поддерживается']);
