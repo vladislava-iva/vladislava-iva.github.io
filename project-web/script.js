@@ -251,10 +251,12 @@ class FeedbackForm {
     this.submitBtn.disabled    = true;
     this.submitBtn.textContent = 'Отправка…';
 
-    const isLoggedIn  = !!sessionStorage.getItem('userCredentials');
-    const method      = isLoggedIn ? 'PUT' : 'POST';
-    const headers     = { 'Content-Type': 'application/json' };
+    const isLoggedIn = !!sessionStorage.getItem('userCredentials');
+    const method     = isLoggedIn ? 'PUT' : 'POST';
+    const headers    = { 'Content-Type': 'application/json' };
     if (isLoggedIn) headers['Authorization'] = getAuthHeader();
+
+    console.log('Отправка на API:', API_URL, method, this.collectData());
 
     try {
       const response = await fetch(API_URL, {
@@ -264,20 +266,14 @@ class FeedbackForm {
       });
 
       const result = await response.json();
+      console.log('Ответ API:', result);
 
       if (result.success) {
         if (!isLoggedIn && result.login) {
-          // Новый пользователь — показываем учётные данные
-          const msg =
-            `Заявка принята!\n` +
-            `Ваш логин: ${result.login}\n` +
-            `Ваш пароль: ${result.password}\n` +
-            `Сохраните их — пароль больше не будет показан.`;
+          // Новый пользователь — показываем логин и пароль
           showMessage(this.feedbackForm,
             `✅ Заявка принята! Логин: ${result.login} | Пароль: ${result.password} — сохраните их!`,
             'success');
-
-          // Автоматически авторизуем пользователя
           sessionStorage.setItem('userCredentials', result.login + ':' + result.password);
           renderAuthPanel();
         } else {
@@ -285,9 +281,13 @@ class FeedbackForm {
         }
         this.feedbackForm.reset();
         this.clearFormData();
+      } else if (result.errors) {
+        const errorMsg = Array.isArray(result.errors)
+          ? result.errors.join('. ')
+          : Object.values(result.errors).join('. ');
+        showMessage(this.feedbackForm, '❌ ' + errorMsg, 'error');
       } else {
-        const errText = result.errors ? result.errors.join(' ') : result.message;
-        showMessage(this.feedbackForm, '❌ ' + errText, 'error');
+        showMessage(this.feedbackForm, '❌ ' + (result.message || 'Неизвестная ошибка'), 'error');
       }
 
     } catch (error) {
