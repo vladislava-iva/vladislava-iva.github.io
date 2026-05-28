@@ -1,16 +1,13 @@
 <?php
 /**
- * api.php — РАБОЧАЯ ВЕРСИЯ для таблицы users
+ * api.php — REST веб-сервис для формы обратной связи
+ * 
+ * GET  /api.php?action=profile   - получить профиль авторизованного пользователя
+ * POST /api.php                  - регистрация нового пользователя
+ * PUT  /api.php                  - обновление данных авторизованного пользователя
  */
 
-$user = 'u82419';
-$pass = '7111555';
-$db = new PDO(
-    "mysql:host=localhost;dbname=$user;charset=utf8mb4",
-    $user,
-    $pass,
-    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-);
+require_once 'db_config.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
@@ -42,18 +39,31 @@ function validate(array $data): array {
     $errors = [];
 
     $name = trim($data['name'] ?? '');
-    if (empty($name) || mb_strlen($name) > 128) {
-        $errors[] = 'Имя обязательно (до 128 символов)';
+    if (empty($name)) {
+        $errors['name'] = 'Имя обязательно.';
+    } elseif (mb_strlen($name) > 128) {
+        $errors['name'] = 'Имя не должно превышать 128 символов.';
     }
 
     $email = trim($data['email'] ?? '');
-    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 128) {
-        $errors[] = 'Укажите корректный email';
+    if (empty($email)) {
+        $errors['email'] = 'Email обязателен.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors['email'] = 'Некорректный email.';
+    } elseif (mb_strlen($email) > 128) {
+        $errors['email'] = 'Email не должен превышать 128 символов.';
+    }
+
+    $phone = trim($data['phone'] ?? '');
+    if (!empty($phone) && !preg_match('/^[\d\s\+\-\(\)]{7,20}$/', $phone)) {
+        $errors['phone'] = 'Некорректный номер телефона.';
     }
 
     $comment = trim($data['comment'] ?? '');
     if (empty($comment)) {
-        $errors[] = 'Комментарий обязателен';
+        $errors['comment'] = 'Комментарий обязателен.';
+    } elseif (mb_strlen($comment) > 65535) {
+        $errors['comment'] = 'Комментарий слишком длинный.';
     }
 
     return $errors;
@@ -73,42 +83,150 @@ function generatePassword(): string {
     return substr(md5(rand()), 0, 8);
 }
 
-// ==================== POST — ОСНОВНОЙ ОБРАБОТЧИК ====================
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+function authenticate(): ?array {
+    global $db;
+    
+    $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+    if (stripos($header, 'Basic ') !== 0) return null;
+    
+    $decoded = base64_decode(substr($header, 6), true);
+    if ($decoded === false) return null;
+    
+    $parts = explode(':', $decoded, 2);
+    if (count($parts) !== 2) return null;
+    
+    [$login, $password] = $parts;
+    
+    $stmt = $db->prepare("SELECT * FROM users WHERE login = ? LIMIT 1");
+    $stmt->execute([$login]);
+    $user = $stmt->fetch();
+    
+    if (!$user) return null;
+    
+    // Поддержка MD5 (как в задании 6) и будущих bcrypt
+    if ($user['password'] === md5($password)) return $user;
+    if (password_verify($password, $user['password'])) return $user;
+    
+    return null;
+}
+
+// ==================== РОУТИНГ ====================
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+// GET - получение профиля
+if ($method === 'GET') {
+    $user = authenticate();
+    if (!$user) {
+        respond(401, ['success' => false, 'message' => 'Требуется авторизация.']);
+    }
+    
+    respond(200, [
+        'success' => true,
+        'profile' => [
+            'login' => $user['login'],
+            'name' => $user['name'],
+            'email' => $user['email'],
+            'phone' => $user['phone'] ?? '',
+            'comment' => $user['comment'] ?? ''
+        ]
+    ]);
+}
+
+// POST - регистрация нового пользователя
+if ($method === 'POST') {
     $input = getInput();
     $errors = validate($input);
-
+    
     if (!empty($errors)) {
-        respond(422, ['success' => false, 'errors' => $errors]);
+        // Fallback для HTML (когда JS отключён)
+        if (stripos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json') === false) {
+            http_response_code(422);
+            header('Content-Type: text/html; charset=utf-8');
+            echo '<h2>Ошибки валидации:</h2><ul>';
+            foreach ($errors as $err) {
+                echo '<li>' . htmlspecialchars($err) . '</li>';
+            }
+            echo '</ul><p><a href="javascript:history.back()">← Вернуться</a></p>';
+            exit;
+        }
+        respond(422, ['success' => false, 'errors' => array_values($errors)]);
     }
-
+    
     $login = generateLogin();
     $password = generatePassword();
     $passHash = md5($password);
-
+    
     try {
-        $stmt = $db->prepare("INSERT INTO users (login, password, name, email, phone, comment) 
-                              VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt = $db->prepare("
+            INSERT INTO users (login, password, name, email, phone, comment) 
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
         $stmt->execute([
             $login,
             $passHash,
-            $input['name'],
-            $input['email'],
-            $input['phone'] ?? '',
-            $input['comment']
+            trim($input['name']),
+            trim($input['email']),
+            trim($input['phone'] ?? ''),
+            trim($input['comment'])
         ]);
-
+        
+        // Fallback для HTML
+        if (stripos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json') === false) {
+            header('Content-Type: text/html; charset=utf-8');
+            echo '<h2>✅ Заявка принята!</h2>';
+            echo '<p><strong>Логин:</strong> ' . htmlspecialchars($login) . '</p>';
+            echo '<p><strong>Пароль:</strong> ' . htmlspecialchars($password) . '</p>';
+            echo '<p>⚠️ Сохраните эти данные — пароль больше не будет показан.</p>';
+            echo '<p><a href="index.html">← На главную</a></p>';
+            exit;
+        }
+        
         respond(201, [
             'success' => true,
             'login' => $login,
             'password' => $password
         ]);
-
+        
     } catch (PDOException $e) {
         error_log("DB ERROR: " . $e->getMessage());
-        respond(500, ['success' => false, 'message' => 'Ошибка базы данных: ' . $e->getMessage()]);
+        respond(500, ['success' => false, 'message' => 'Ошибка при сохранении данных.']);
     }
 }
 
-respond(405, ['success' => false, 'message' => 'Метод не поддерживается']);
+// PUT - обновление данных авторизованного пользователя
+if ($method === 'PUT') {
+    $user = authenticate();
+    if (!$user) {
+        respond(401, ['success' => false, 'message' => 'Требуется авторизация.']);
+    }
+    
+    $input = getInput();
+    $errors = validate($input);
+    
+    if (!empty($errors)) {
+        respond(422, ['success' => false, 'errors' => array_values($errors)]);
+    }
+    
+    try {
+        $stmt = $db->prepare("
+            UPDATE users SET name = ?, email = ?, phone = ?, comment = ? WHERE id = ?
+        ");
+        $stmt->execute([
+            trim($input['name']),
+            trim($input['email']),
+            trim($input['phone'] ?? ''),
+            trim($input['comment']),
+            $user['id']
+        ]);
+        
+        respond(200, ['success' => true, 'message' => 'Данные успешно обновлены.']);
+        
+    } catch (PDOException $e) {
+        error_log("DB ERROR: " . $e->getMessage());
+        respond(500, ['success' => false, 'message' => 'Ошибка при обновлении данных.']);
+    }
+}
+
+respond(405, ['success' => false, 'message' => 'Метод не поддерживается.']);
 ?>
