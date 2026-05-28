@@ -173,4 +173,114 @@ function fillFormFromProfile(profile) {
     const commentInput = document.getElementById('field-name-2');
     
     if (nameInput) nameInput.value = profile.name || '';
-   
+    if (emailInput) emailInput.value = profile.email || '';
+    if (phoneInput) phoneInput.value = profile.phone || '';
+    if (commentInput) commentInput.value = profile.comment || '';
+}
+
+// Класс формы
+class FeedbackForm {
+    constructor() {
+        this.form = document.getElementById('feedbackForm');
+        this.submitBtn = document.getElementById('submitBtn');
+        if (!this.form) return;
+        this.init();
+    }
+    
+    init() {
+        this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+        this.restoreFormData();
+        this.form.addEventListener('input', () => this.saveFormData());
+    }
+    
+    saveFormData() {
+        const data = {
+            name: document.getElementById('field-name-1')?.value || '',
+            phone: document.getElementById('phone')?.value || '',
+            email: document.getElementById('field-email')?.value || '',
+            comment: document.getElementById('field-name-2')?.value || ''
+        };
+        try { localStorage.setItem('feedbackFormData', JSON.stringify(data)); } catch(e) {}
+    }
+    
+    restoreFormData() {
+        try {
+            const saved = localStorage.getItem('feedbackFormData');
+            if (!saved) return;
+            const data = JSON.parse(saved);
+            const nameInput = document.getElementById('field-name-1');
+            if (nameInput && data.name) nameInput.value = data.name;
+            const phoneInput = document.getElementById('phone');
+            if (phoneInput && data.phone) phoneInput.value = data.phone;
+            const emailInput = document.getElementById('field-email');
+            if (emailInput && data.email) emailInput.value = data.email;
+            const commentInput = document.getElementById('field-name-2');
+            if (commentInput && data.comment) commentInput.value = data.comment;
+        } catch(e) {}
+    }
+    
+    collectData() {
+        return {
+            name: document.getElementById('field-name-1')?.value.trim() || '',
+            phone: document.getElementById('phone')?.value.trim() || '',
+            email: document.getElementById('field-email')?.value.trim() || '',
+            comment: document.getElementById('field-name-2')?.value.trim() || ''
+        };
+    }
+    
+    async handleSubmit(e) {
+        e.preventDefault();
+        
+        if (!this.form.checkValidity()) {
+            showMessage(this.form, 'Пожалуйста, заполните все обязательные поля.', 'error');
+            return;
+        }
+        
+        const isLoggedIn = !!sessionStorage.getItem('userCredentials');
+        const method = isLoggedIn ? 'PUT' : 'POST';
+        const headers = { 'Content-Type': 'application/json' };
+        if (isLoggedIn) headers['Authorization'] = getAuthHeader();
+        
+        const originalText = this.submitBtn?.textContent || 'Отправить';
+        if (this.submitBtn) {
+            this.submitBtn.disabled = true;
+            this.submitBtn.textContent = 'Отправка...';
+        }
+        
+        try {
+            const response = await fetch(API_URL, { method, headers, body: JSON.stringify(this.collectData()) });
+            const result = await response.json();
+            
+            if (result.login && result.password) {
+                showMessage(this.form, `✅ Заявка принята! Логин: ${result.login} | Пароль: ${result.password} — сохраните их!`, 'success');
+                sessionStorage.setItem('userCredentials', result.login + ':' + result.password);
+                renderAuthPanel();
+                this.form.reset();
+                try { localStorage.removeItem('feedbackFormData'); } catch(e) {}
+            } else if (result.success) {
+                showMessage(this.form, '✅ Данные успешно обновлены!', 'success');
+                this.form.reset();
+                try { localStorage.removeItem('feedbackFormData'); } catch(e) {}
+            } else if (result.errors) {
+                const errorMsg = Array.isArray(result.errors) ? result.errors.join('. ') : Object.values(result.errors).join('. ');
+                showMessage(this.form, '❌ ' + errorMsg, 'error');
+            } else if (result.message) {
+                showMessage(this.form, '❌ ' + result.message, 'error');
+            }
+        } catch (error) {
+            console.error('Ошибка отправки:', error);
+            showMessage(this.form, '❌ Ошибка соединения с сервером.', 'error');
+        } finally {
+            if (this.submitBtn) {
+                this.submitBtn.disabled = false;
+                this.submitBtn.textContent = originalText;
+            }
+        }
+    }
+}
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', () => {
+    new FeedbackForm();
+    createAuthUI();
+});
