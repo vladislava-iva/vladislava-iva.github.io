@@ -1,12 +1,14 @@
 <?php
 /**
- * api.php — Веб-сервис для формы (таблица users)
+ * api.php — Финальная версия для таблицы users
  */
 
 $user = 'u82419';
 $pass = '7111555';
 $db = new PDO(
-    "mysql:host=localhost;dbname=$user;charset=utf8mb4", $user, $pass,
+    "mysql:host=localhost;dbname=$user;charset=utf8mb4", 
+    $user, 
+    $pass,
     [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
 );
 
@@ -27,7 +29,8 @@ function respond(int $code, array $body): void {
 }
 
 function getInput(): array {
-    if (stripos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json') !== false) {
+    $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+    if (stripos($contentType, 'application/json') !== false) {
         $raw = file_get_contents('php://input');
         $data = json_decode($raw, true);
         return is_array($data) ? $data : [];
@@ -39,62 +42,59 @@ function validate(array $data): array {
     $errors = [];
 
     $name = trim($data['name'] ?? '');
-    if (empty($name) || mb_strlen($name) > 128) $errors[] = 'Имя обязательно (макс. 128 символов)';
+    if (empty($name) || mb_strlen($name) > 128) {
+        $errors[] = 'Имя обязательно (до 128 символов)';
+    }
 
     $email = trim($data['email'] ?? '');
     if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 128) {
-        $errors[] = 'Введите корректный email';
-    }
-
-    $phone = trim($data['phone'] ?? '');
-    if (!empty($phone) && !preg_match('/^[\d\s\+\-\(\)]{7,20}$/', $phone)) {
-        $errors[] = 'Некорректный телефон';
+        $errors[] = 'Укажите корректный email';
     }
 
     $comment = trim($data['comment'] ?? '');
-    if (empty($comment)) $errors[] = 'Комментарий обязателен';
+    if (empty($comment)) {
+        $errors[] = 'Комментарий обязателен';
+    }
 
     return $errors;
 }
 
-function generateLogin(): string {
-    global $db;
-    do {
-        $login = substr(uniqid(), 0, 8);
-        $stmt = $db->prepare("SELECT id FROM users WHERE login = ?");
-        $stmt->execute([$login]);
-    } while ($stmt->fetch());
-    return $login;
+// ==================== POST - НОВАЯ ЗАЯВКА ====================
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = getInput();
+    $errors = validate($input);
+
+    if (!empty($errors)) {
+        respond(422, ['success' => false, 'errors' => $errors]);
+    }
+
+    $login = substr(uniqid(), 0, 8);
+    $password = substr(md5(rand()), 0, 8);
+    $passHash = md5($password);
+
+    try {
+        $stmt = $db->prepare("INSERT INTO users (login, password, name, email, phone, comment) 
+                              VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $login,
+            $passHash,
+            $input['name'],
+            $input['email'],
+            $input['phone'] ?? '',
+            $input['comment']
+        ]);
+
+        respond(201, [
+            'success' => true,
+            'login' => $login,
+            'password' => $password
+        ]);
+
+    } catch (PDOException $e) {
+        error_log("INSERT ERROR: " . $e->getMessage());
+        respond(500, ['success' => false, 'message' => 'Ошибка базы данных: ' . $e->getMessage()]);
+    }
 }
-
-function generatePassword(): string {
-    return substr(md5(rand()), 0, 8);
-}
-
-function parseBasicAuth(): ?array {
-    $header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
-    if (stripos($header, 'Basic ') !== 0) return null;
-    $decoded = base64_decode(substr($header, 6));
-    if (!$decoded) return null;
-    $parts = explode(':', $decoded, 2);
-    return count($parts) === 2 ? $parts : null;
-}
-
-function authenticate(): ?array {
-    global $db;
-    $creds = parseBasicAuth();
-    if (!$creds) return null;
-    [$login, $password] = $creds;
-
-    $stmt = $db->prepare("SELECT * FROM users WHERE login = ?");
-    $stmt->execute([$login]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($user && $user['password'] === md5($password)) return $user;
-    return null;
-}
-
-// ==================== ОБРАБОТКА ЗАПРОСОВ ====================
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -109,34 +109,6 @@ if ($method === 'GET') {
         'phone' => $user['phone'],
         'comment' => $user['comment']
     ]]);
-}
-
-if ($method === 'POST') {
-    $input = getInput();
-    $errors = validate($input);
-
-    if ($errors) {
-        respond(422, ['success' => false, 'errors' => $errors]);
-    }
-
-    $login = generateLogin();
-    $password = generatePassword();
-    $passHash = md5($password);
-
-    try {
-        $stmt = $db->prepare("INSERT INTO users (login, password, name, email, phone, comment) 
-                              VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$login, $passHash, $input['name'], $input['email'], $input['phone'] ?? '', $input['comment']]);
-    } catch (PDOException $e) {
-        error_log("DB Error: " . $e->getMessage());
-        respond(500, ['success' => false, 'message' => 'Ошибка сохранения в базу']);
-    }
-
-    respond(201, [
-        'success' => true,
-        'login' => $login,
-        'password' => $password
-    ]);
 }
 
 if ($method === 'PUT') {
