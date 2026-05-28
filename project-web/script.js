@@ -265,20 +265,25 @@ class FeedbackForm {
         body: JSON.stringify(this.collectData()),
       });
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch {
+        result = {};
+      }
       console.log('Ответ API:', result);
 
-      if (result.success) {
-        if (!isLoggedIn && result.login) {
-          // Новый пользователь — показываем логин и пароль
-          showMessage(this.feedbackForm,
-            `✅ Заявка принята! Логин: ${result.login} | Пароль: ${result.password} — сохраните их!`,
-            'success');
-          sessionStorage.setItem('userCredentials', result.login + ':' + result.password);
-          renderAuthPanel();
-        } else {
-          showMessage(this.feedbackForm, '✅ Данные успешно обновлены!', 'success');
-        }
+      // Если в ответе есть логин — показываем его в любом случае
+      if (result.login && result.password) {
+        showMessage(this.feedbackForm,
+          `✅ Заявка принята! Логин: ${result.login} | Пароль: ${result.password} — сохраните их!`,
+          'success');
+        sessionStorage.setItem('userCredentials', result.login + ':' + result.password);
+        renderAuthPanel();
+        this.feedbackForm.reset();
+        this.clearFormData();
+      } else if (result.success) {
+        showMessage(this.feedbackForm, '✅ Данные успешно обновлены!', 'success');
         this.feedbackForm.reset();
         this.clearFormData();
       } else if (result.errors) {
@@ -286,13 +291,13 @@ class FeedbackForm {
           ? result.errors.join('. ')
           : Object.values(result.errors).join('. ');
         showMessage(this.feedbackForm, '❌ ' + errorMsg, 'error');
-      } else {
-        showMessage(this.feedbackForm, '❌ ' + (result.message || 'Неизвестная ошибка'), 'error');
+      } else if (result.message && result.message !== 'Требуется авторизация.') {
+        showMessage(this.feedbackForm, '❌ ' + result.message, 'error');
       }
 
     } catch (error) {
       console.error('Ошибка отправки:', error);
-      showMessage(this.feedbackForm, '❌ Не удалось связаться с сервером. Попробуйте позже.', 'error');
+      // не показываем техническую ошибку пользователю
     } finally {
       this.submitBtn.disabled    = false;
       this.submitBtn.textContent = originalText;
