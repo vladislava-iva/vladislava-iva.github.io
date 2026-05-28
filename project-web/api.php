@@ -1,13 +1,13 @@
 <?php
 /**
- * api.php — Финальная версия для таблицы users
+ * api.php — Рабочая версия для таблицы users
  */
 
 $user = 'u82419';
 $pass = '7111555';
 $db = new PDO(
-    "mysql:host=localhost;dbname=$user;charset=utf8mb4", 
-    $user, 
+    "mysql:host=localhost;dbname=$user;charset=utf8mb4",
+    $user,
     $pass,
     [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
 );
@@ -59,8 +59,25 @@ function validate(array $data): array {
     return $errors;
 }
 
-// ==================== POST - НОВАЯ ЗАЯВКА ====================
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+function generateLogin(): string {
+    global $db;
+    do {
+        $login = substr(uniqid(), 0, 8);
+        $stmt = $db->prepare("SELECT id FROM users WHERE login = ? LIMIT 1");
+        $stmt->execute([$login]);
+    } while ($stmt->fetch());
+    return $login;
+}
+
+function generatePassword(): string {
+    return substr(md5(rand()), 0, 8);
+}
+
+// ==================== ОСНОВНАЯ ЛОГИКА ====================
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method === 'POST') {
     $input = getInput();
     $errors = validate($input);
 
@@ -68,8 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         respond(422, ['success' => false, 'errors' => $errors]);
     }
 
-    $login = substr(uniqid(), 0, 8);
-    $password = substr(md5(rand()), 0, 8);
+    $login = generateLogin();
+    $password = generatePassword();
     $passHash = md5($password);
 
     try {
@@ -92,41 +109,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } catch (PDOException $e) {
         error_log("INSERT ERROR: " . $e->getMessage());
-        respond(500, ['success' => false, 'message' => 'Ошибка базы данных: ' . $e->getMessage()]);
+        respond(500, ['success' => false, 'message' => 'Ошибка базы данных']);
     }
 }
-
-$method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
-    $user = authenticate();
-    if (!$user) respond(401, ['success' => false, 'message' => 'Требуется авторизация.']);
-    
-    respond(200, ['success' => true, 'profile' => [
-        'login' => $user['login'],
-        'name' => $user['name'],
-        'email' => $user['email'],
-        'phone' => $user['phone'],
-        'comment' => $user['comment']
-    ]]);
+    // Простая заглушка для теста
+    respond(200, ['success' => true, 'message' => 'GET работает']);
 }
 
+// PUT — потом добавим
 if ($method === 'PUT') {
-    $user = authenticate();
-    if (!$user) respond(401, ['success' => false, 'message' => 'Требуется авторизация.']);
-
-    $input = getInput();
-    $errors = validate($input);
-    if ($errors) respond(422, ['success' => false, 'errors' => $errors]);
-
-    try {
-        $stmt = $db->prepare("UPDATE users SET name=?, email=?, phone=?, comment=? WHERE id=?");
-        $stmt->execute([$input['name'], $input['email'], $input['phone'] ?? '', $input['comment'], $user['id']]);
-    } catch (PDOException $e) {
-        respond(500, ['success' => false, 'message' => 'Ошибка обновления']);
-    }
-
-    respond(200, ['success' => true, 'message' => 'Данные обновлены']);
+    respond(200, ['success' => true, 'message' => 'PUT пока не реализован']);
 }
 
 respond(405, ['success' => false, 'message' => 'Метод не поддерживается']);
