@@ -12,3 +12,13 @@ CREATE TABLE users (
 Warning: require_once(db_config.php): Failed to open stream: No such file or directory in /home/u82419/www/vladislava-iva.github.io/project-web/api.php on line 10
 
 Fatal error: Uncaught Error: Failed opening required 'db_config.php' (include_path='.:/usr/share/php') in /home/u82419/www/vladislava-iva.github.io/project-web/api.php:10 Stack trace: #0 {main} thrown in /home/u82419/www/vladislava-iva.github.io/project-web/api.php on line 10
+
+{
+    "success": true,
+    "message": "API работает. Используйте POST для отправки формы или PUT для обновления данных.",
+    "endpoints": {
+        "POST": "Регистрация нового пользователя",
+        "PUT": "Обновление данных (требуется Basic Auth)",
+        "GET with Basic Auth": "Получение профиля"
+    }
+}
