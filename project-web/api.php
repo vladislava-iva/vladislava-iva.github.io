@@ -1,7 +1,6 @@
 <?php
 /**
  * api.php — REST веб-сервис для формы обратной связи
- * Конфигурация БД встроена непосредственно в файл
  */
 
 // ─── Встроенная конфигурация БД ────────────────────────────────────────────────
@@ -123,7 +122,6 @@ function authenticate(): ?array {
     
     if (!$user) return null;
     
-    // Поддержка MD5 (как в задании 6)
     if ($user['password'] === md5($password)) return $user;
     if (password_verify($password, $user['password'])) return $user;
     
@@ -134,10 +132,14 @@ function authenticate(): ?array {
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-// GET - получение профиля
+// GET - получение профиля (поддерживаем как с action=profile, так и без)
 if ($method === 'GET') {
     $action = $_GET['action'] ?? '';
-    if ($action === 'profile') {
+    
+    // Если есть Authorization header - пробуем вернуть профиль
+    $auth_header = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+    
+    if (!empty($auth_header) || $action === 'profile') {
         $user = authenticate();
         if (!$user) {
             respond(401, ['success' => false, 'message' => 'Требуется авторизация.']);
@@ -154,7 +156,17 @@ if ($method === 'GET') {
             ]
         ]);
     }
-    respond(404, ['success' => false, 'message' => 'Неизвестный GET запрос']);
+    
+    // Если нет авторизации - просто возвращаем информацию об API
+    respond(200, [
+        'success' => true,
+        'message' => 'API работает. Используйте POST для отправки формы или PUT для обновления данных.',
+        'endpoints' => [
+            'POST' => 'Регистрация нового пользователя',
+            'PUT' => 'Обновление данных (требуется Basic Auth)',
+            'GET with Basic Auth' => 'Получение профиля'
+        ]
+    ]);
 }
 
 // POST - регистрация нового пользователя
@@ -163,7 +175,6 @@ if ($method === 'POST') {
     $errors = validate($input);
     
     if (!empty($errors)) {
-        // Fallback для HTML (когда JS отключён)
         if (stripos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json') === false) {
             http_response_code(422);
             header('Content-Type: text/html; charset=utf-8');
@@ -173,19 +184,18 @@ if ($method === 'POST') {
             <style>
                 body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
                 .error-box { max-width: 500px; margin: 50px auto; background: #f8d7da; color: #721c24; padding: 20px; border-radius: 8px; }
-                ul { text-align: left; }
                 .btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #333; color: white; text-decoration: none; border-radius: 4px; }
             </style>
             </head>
             <body>
             <div class="error-box">
-                <h2>❌ Ошибки валидации:</h2>
+                <h2>Ошибки валидации:</h2>
                 <ul>';
             foreach ($errors as $err) {
                 echo '<li>' . htmlspecialchars($err) . '</li>';
             }
             echo '</ul>
-                <a href="javascript:history.back()" class="btn">← Вернуться</a>
+                <a href="javascript:history.back()" class="btn">Вернуться</a>
             </div>
             </body>
             </html>';
@@ -212,7 +222,6 @@ if ($method === 'POST') {
             trim($input['comment'])
         ]);
         
-        // Fallback для HTML (когда JS отключён)
         if (stripos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json') === false) {
             header('Content-Type: text/html; charset=utf-8');
             echo '<!DOCTYPE html>
@@ -227,13 +236,13 @@ if ($method === 'POST') {
             </head>
             <body>
             <div class="success-box">
-                <h2>✅ Заявка принята!</h2>
+                <h2>Заявка принята!</h2>
                 <div class="credentials">
                     <p><strong>Логин:</strong> ' . htmlspecialchars($login) . '</p>
                     <p><strong>Пароль:</strong> ' . htmlspecialchars($password) . '</p>
                 </div>
-                <p style="color: #856404;">⚠️ Сохраните эти данные — пароль больше не будет показан.</p>
-                <a href="index.html" class="btn">← На главную</a>
+                <p>Сохраните эти данные — пароль больше не будет показан.</p>
+                <a href="index.html" class="btn">На главную</a>
             </div>
             </body>
             </html>';
