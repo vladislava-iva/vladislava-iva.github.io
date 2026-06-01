@@ -3,7 +3,7 @@
  * admin.php - Административная панель для управления пользователями
  */
 
-require_once 'db_config.php';
+require_once __DIR__ . '/db_config.php';
 
 // HTTP Basic Authentication
 $auth_success = false;

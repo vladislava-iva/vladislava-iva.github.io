@@ -79,7 +79,6 @@ header {
   }
 }
 
-
 .video-overlay {
   position: absolute;
   top: 0;
@@ -112,7 +111,6 @@ header nav.liens-section {
     transform: translateY(0);
   }
 }
-
 
 header nav.liens-section::before {
   content: "";
@@ -202,7 +200,6 @@ header nav.liens-section::before {
   }
 }
 
-
 #text-gauche h1 {
   line-height: 1.1;
   margin-bottom: 25px;
@@ -225,14 +222,15 @@ header nav.liens-section::before {
   border-radius: 6px;
   margin-top: 40px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.25s ease;
+  transition:
+    background-color 0.3s ease,
+    transform 0.25s ease;
 }
 
 #text-gauche button:hover {
   background-color: #ff0000;
   transform: translateY(-2px);
 }
-
 
 #text-gauche button a {
   color: #fff;
@@ -257,7 +255,6 @@ header nav.liens-section::before {
     transform: translateX(0);
   }
 }
-
 
 .text {
   display: grid;
@@ -1114,20 +1111,21 @@ textarea.form-control {
 }
 
 #form-section {
-  background: linear-gradient(
+  background:
+    linear-gradient(
       254.72deg,
       rgba(255, 255, 255, 0.276) -114.85%,
       rgba(255, 255, 255, 0) 69.04%
     ),
     url(./D-flying.svg) no-repeat top center,
-    url(.D-footer.svg) no-repeat bottom right, #040613;
+    url(.D-footer.svg) no-repeat bottom right,
+    #040613;
   padding: 117px 0 54px;
   color: #fff;
 }
 
 a.info {
   text-decoration: underline !important;
-  weight-font: 600;
 }
 .tel {
   font-size: 30px;
@@ -1178,12 +1176,14 @@ ul.ul {
 }
 
 .bg-purple {
-  background: linear-gradient(
+  background:
+    linear-gradient(
       254.72deg,
       rgba(255, 255, 255, 0.276) -114.85%,
       rgba(255, 255, 255, 0) 69.04%
     ),
-    url(./D-footer.svg) no-repeat bottom right, #040613;
+    url(./D-footer.svg) no-repeat bottom right,
+    #040613;
   padding: 117px 0 54px;
   color: #fff;
   font-family: Montserrat, serif;
@@ -1274,7 +1274,9 @@ table tr:nth-child(even) {
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .review-card:hover {
@@ -1991,7 +1993,9 @@ body {
   left: 0;
   width: 100%;
   height: calc(100% + 150px);
-  background: url("druplicon.svg") center top / cover no-repeat, #000000;
+  background:
+    url("druplicon.svg") center top / cover no-repeat,
+    #000000;
   z-index: -1;
 }
 
@@ -2365,7 +2369,9 @@ body {
   color: #222;
   text-align: center;
   padding: 40px 0;
-  background: url("./D-background-opacity.svg") no-repeat right top, #fff;
+  background:
+    url("./D-background-opacity.svg") no-repeat right top,
+    #fff;
   background-size: 58%;
 }
 
@@ -2390,7 +2396,9 @@ body {
   box-shadow: 0px 4px 25px rgba(0, 0, 0, 0.07);
   text-align: left;
 
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .tarif-card h3 {
