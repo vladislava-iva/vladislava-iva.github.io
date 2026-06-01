@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // ========== ЗАГРУЗКА ДАННЫХ ==========
 $users = $pdo->query("
     SELECT * FROM users 
-    ORDER BY created_at DESC
+    ORDER BY id DESC
 ")->fetchAll();
 ?>
 
