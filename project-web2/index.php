@@ -1173,7 +1173,7 @@ session_start();
                         </noscript>
 
                         <form id="feedbackForm"
-      action="http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web2/api.php"
+      action="http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web/api.php"
       method="POST"
       class="row g-3">
 

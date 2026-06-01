@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $users = $pdo->query("
     SELECT * FROM users
-    ORDER BY created_at DESC
+    ORDER BY id DESC
 ")->fetchAll();
 ?>
 
@@ -121,7 +121,7 @@ value="<?= htmlspecialchars($user['phone']) ?>">
 <textarea name="comment"><?= htmlspecialchars($user['comment']) ?></textarea>
 </td>
 
-<td><?= $user['created_at'] ?></td>
+<td>—</td>
 
 <td>
 
