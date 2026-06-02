@@ -1,5 +1,8 @@
 Options -Indexes
 RewriteEngine On
+
+# Запрещаем прямой доступ к папке modules
+RewriteRule ^modules/ - [F,L]
 RewriteBase /vladislava-iva.github.io/project-web7/project1/
 
 # Пропускаем существующие файлы и папки без изменений
