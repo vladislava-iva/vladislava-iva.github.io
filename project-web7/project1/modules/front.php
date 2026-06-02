@@ -66,7 +66,7 @@ function front_post($request) {
         'message' => 'Данные сохранены',
         'login' => $login,
         'password' => $password,
-        'profile_url' => 'http://' . $_SERVER['HTTP_HOST'] . 'u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/profile/' . $id
+        'profile_url' => 'http://' . $_SERVER['HTTP_HOST'] . 'u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/profile.php/' . $id
     ];
     
     echo json_encode($response, JSON_UNESCAPED_UNICODE);

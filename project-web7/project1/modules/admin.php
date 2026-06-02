@@ -24,5 +24,5 @@ function admin_post($request, $id) {
         $stmt->execute([$id]);
     }
     
-    return redirect('http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/admin?deleted=1');
+    return redirect('http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/admin.php?deleted=1');
 }

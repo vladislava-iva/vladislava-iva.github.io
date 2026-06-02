@@ -35,7 +35,7 @@
     </form>
     
     <a href="http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/admin" class="btn btn-back">← Назад в админ-панель</a>
-    <a href="http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project/1%20(2).html" class="btn btn-back">← Вернуться на главную (форма)</a>
+    <a href="http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project/1.html" class="btn btn-back">← Вернуться на главную (форма)</a>
 
     <script>
         // Показываем сообщение об успехе, если сохранение прошло

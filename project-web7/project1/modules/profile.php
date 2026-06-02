@@ -91,8 +91,8 @@ function profile_post($request, $id) {
     $stmt->execute([$name, $phone, $email, $comment, $id]);
     
     if ($is_admin) {
-        return redirect('http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/admin?saved=1');
+        return redirect('http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/admin.php?saved=1');
     } else {
-        return redirect('http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/profile/' . $id . '?saved=1');
+        return redirect('http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/profile.php/' . $id . '?saved=1');
     }
 }
