@@ -51,7 +51,7 @@
         <?php endforeach; ?>
     </table>
     
-    <p style="margin-top: 20px;"><a href="http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project/1%20(2).html">← На главную (форма)</a></p>
+    <p style="margin-top: 20px;"><a href="http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project/1.html">← На главную (форма)</a></p>
     
     <script>
         const urlParams = new URLSearchParams(window.location.search);

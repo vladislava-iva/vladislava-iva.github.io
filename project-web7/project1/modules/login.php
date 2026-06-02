@@ -25,7 +25,7 @@ function login_post($request) {
     
     // Проверяем пароль через Basic Auth (временно)
     // Для простоты — проверяем через отдельный запрос
-    $auth_url = 'http://' . $_SERVER['HTTP_HOST'] . 'u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/profile.php/' . $user['id'];
+    $auth_url = 'http://' . $_SERVER['HTTP_HOST'] . '/vladislava-iva.github.io/project-web7/project1/profile/' . $user['id'];
     
     // Создаём поток с авторизацией
     $opts = [
