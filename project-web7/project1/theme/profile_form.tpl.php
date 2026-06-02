@@ -25,7 +25,7 @@
         <strong>ID профиля:</strong> <?= $c['profile']['id'] ?>
     </div>
     
-    <form method="POST" action="http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/profile/<?= $c['profile']['id'] ?>" id="profileForm">
+    <form method="POST" action="http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/modules/profile/<?= $c['profile']['id'] ?>" id="profileForm">
         <input type="hidden" name="id" value="<?= htmlspecialchars($c['profile']['id']) ?>">
         <input type="text" name="name" value="<?= htmlspecialchars($c['profile']['name']) ?>" placeholder="Имя" required>
         <input type="tel" name="phone" value="<?= htmlspecialchars($c['profile']['phone']) ?>" placeholder="Телефон">
@@ -34,7 +34,7 @@
         <button type="submit">Сохранить изменения</button>
     </form>
     
-    <a href="http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/admin" class="btn btn-back">← Назад в админ-панель</a>
+    <a href="http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/modules/admin" class="btn btn-back">← Назад в админ-панель</a>
     <a href="http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project/1.html" class="btn btn-back">← Вернуться на главную (форма)</a>
 
     <script>

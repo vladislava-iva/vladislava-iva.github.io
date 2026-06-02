@@ -38,7 +38,7 @@ function findMyProfile_post($request) {
     }
     
     // Всё правильно — перенаправляем на страницу редактирования профиля
-    header('Location: http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/profile/' . $user['id']);
+    header('Location: http://u82419.kubsu-dev.ru/vladislava-iva.github.io/project-web7/project1/modules/profile/' . $user['id']);
     exit;
 }
 
