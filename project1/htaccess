@@ -1,0 +1,10 @@
+Options -Indexes
+RewriteEngine On
+RewriteBase /vladislava-iva.github.io/project1/
+
+# Пропускаем существующие файлы и папки без изменений
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Всё остальное направляем на index.php с параметром q
+RewriteRule ^(.*)$ index.php?q=$1 [L,QSA]
