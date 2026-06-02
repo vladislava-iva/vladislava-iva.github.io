@@ -38,7 +38,7 @@ function findMyProfile_post($request) {
     }
     
     // Всё правильно — перенаправляем на страницу редактирования профиля
-    header('Location: http://' . $_SERVER['HTTP_HOST'] . '/vladislava-iva.github.io/project1/profile/' . $user['id']);
+    header('Location: http://' . $_SERVER['HTTP_HOST'] . '/vladislava-iva.github.io/project1/index.php?q=profile/' . $user['id']);
     exit;
 }
 

@@ -42,10 +42,10 @@
             <td><?= htmlspecialchars($row['login']) ?></td>
             <td><?= htmlspecialchars($row['created_at']) ?></td>
             <td>
-                <form method="POST" action="/vladislava-iva.github.io/project1/admin/<?= $row['id'] ?>" style="display:inline;">
+                <form method="POST" action="/vladislava-iva.github.io/project1/index.php?q=admin/<?= $row['id'] ?>" style="display:inline;">
                     <button type="submit" class="delete-btn" onclick="return confirm('Удалить заявку №<?= $row['id'] ?>?')"> Удалить</button>
                 </form>
-                <a href="/vladislava-iva.github.io/project1/profile/<?= $row['id'] ?>" class="edit-btn" style="background:#3498db; color:white; text-decoration:none; padding:5px 10px;"> Редактировать</a>
+                <a href="/vladislava-iva.github.io/project1/index.php?q=profile/<?= $row['id'] ?>" class="edit-btn" style="background:#3498db; color:white; text-decoration:none; padding:5px 10px;"> Редактировать</a>
             </td>
         </tr>
         <?php endforeach; ?>
